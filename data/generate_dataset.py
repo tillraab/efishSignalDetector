@@ -43,26 +43,38 @@ def load_data(folder):
 
 
 def main(folder):
+    min_freq, max_freq, d_freq, d_time, freq_overlap, time_overlap = (
+        200, 1500, 200, 50, 60*15, 60*5)
+
     freq, times, spec, EODf_v, ident_v, idx_v, times_v = load_data(folder)
+    f_res, t_res = freq[1] - freq[0], times[1] - times[0]
 
     unique_ids = np.unique(ident_v[~np.isnan(ident_v)])
 
-    f_res, t_res = freq[1] - freq[0], times[1] - times[0]
+    pic_base = tqdm(itertools.product(
+        np.arange(0, times[-1], d_time),
+        np.arange(min_freq, max_freq, d_freq)
+    ),
+        total=(max_freq-min_freq)//d_freq * times[-1] // d_time
+    )
 
-    for t0, f0 in tqdm(list(itertools.product(np.arange(0, times_v[-1], 60*15), np.arange(200, 1500, 200)))):
-        t1 = t0 + 60*20
-        f1 = f0 + 250
+    for t0, f0 in pic_base:
+        t1 = t0 + d_time + time_overlap
+        f1 = f0 + d_freq + freq_overlap
+
+        present_freqs = EODf_v[(~np.isnan(ident_v)) &
+                               (t0 <= times_v[idx_v] <= t1)]
+        if len(present_freqs) == 0:
+            continue
 
         f_idx0, f_idx1 = np.argmin(np.abs(freq - f0)), np.argmin(np.abs(freq - f1))
-        t_idx0, t_idx1 = np.argmin(np.abs(times_v - t0)), np.argmin(np.abs(times_v - t1))
-
+        t_idx0, t_idx1 = np.argmin(np.abs(times - t0)), np.argmin(np.abs(times - t1))
 
         s = torch.from_numpy(spec[f_idx0:f_idx1, t_idx0:t_idx1].copy()).type(torch.float32)
         log_s = torch.log10(s)
-        # s_normed = F.normalize(s.view(-1)).view(s.shape[0], s.shape[1])
-
         transformed = T.Normalize(mean=torch.mean(log_s), std=torch.std(log_s))
         s_trans = transformed(log_s.unsqueeze(0))
+
 
         fig_title = (f'{Path(folder).name}__{t0:.0f}s-{t1:.0f}s__{f0:.0f}-{f1:.0f}Hz').replace(' ', '0')
         fig = plt.figure(figsize=(7, 7), num=fig_title)
