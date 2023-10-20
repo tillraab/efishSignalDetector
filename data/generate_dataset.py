@@ -39,12 +39,18 @@ def load_data(folder):
     idx_v = np.load(base_path / 'idx_v.npy')
     times_v = np.load(base_path / 'times.npy')
 
-    return fill_freqs, fill_times, fill_spec, EODf_v, ident_v, idx_v, times_v
+    rise_idx = np.load(base_path / 'analysis' / 'rise_idx.npy')
+
+    return fill_freqs, fill_times, fill_spec, EODf_v, ident_v, idx_v, times_v, rise_idx
 
 
 def main(folder):
-    min_freq, max_freq, d_freq, freq_overlap, d_time, time_overlap = (
-        200, 1500, 200, 50, 60*15, 60*5)
+    min_freq = 200
+    max_freq = 1500
+    d_freq = 200
+    freq_overlap = 50
+    d_time = 60*15
+    time_overlap = 60*5
 
     freq, times, spec, EODf_v, ident_v, idx_v, times_v = load_data(folder)
     f_res, t_res = freq[1] - freq[0], times[1] - times[0]
@@ -55,7 +61,7 @@ def main(folder):
         np.arange(0, times[-1], d_time),
         np.arange(min_freq, max_freq, d_freq)
     ),
-        total=((max_freq-min_freq)//d_freq) * (times[-1] // d_time)
+        total=int(((max_freq-min_freq)//d_freq) * (times[-1] // d_time))
     )
 
     for t0, f0 in pic_base:
@@ -64,7 +70,7 @@ def main(folder):
 
         present_freqs = EODf_v[(~np.isnan(ident_v)) &
                                (t0 <= times_v[idx_v]) &
-                               (times_v[idx_v]<= t1) &
+                               (times_v[idx_v] <= t1) &
                                (EODf_v >= f0) &
                                (EODf_v <= f1)]
         if len(present_freqs) == 0:
@@ -72,6 +78,9 @@ def main(folder):
 
         f_idx0, f_idx1 = np.argmin(np.abs(freq - f0)), np.argmin(np.abs(freq - f1))
         t_idx0, t_idx1 = np.argmin(np.abs(times - t0)), np.argmin(np.abs(times - t1))
+
+        embed()
+        quit()
 
         s = torch.from_numpy(spec[f_idx0:f_idx1, t_idx0:t_idx1].copy()).type(torch.float32)
         log_s = torch.log10(s)
@@ -84,11 +93,7 @@ def main(folder):
         gs = gridspec.GridSpec(1, 2, width_ratios=(8, 1), wspace=0)# , bottom=0, left=0, right=1, top=1
         gs2 = gridspec.GridSpec(1, 1, bottom=0, left=0, right=1, top=1)#
         ax = fig.add_subplot(gs2[0, 0])
-        # cax = fig.add_subplot(gs[0, 1])
-        im = ax.imshow(s_trans.squeeze(), cmap='gray', aspect='auto', origin='lower', extent=(times_v[t_idx0]/3600, times_v[t_idx1]/3600 + t_res, freq[f_idx0], freq[f_idx1] + f_res))
-        # im = ax.imshow(log_s, cmap='gray', aspect='auto')
-        # ax.invert_yaxis()
-        # fig.colorbar(im, cax=cax)
+        im = ax.imshow(s_trans.squeeze(), cmap='gray', aspect='auto', origin='lower', extent=(times[t_idx0]/3600, times[t_idx1]/3600 + t_res, freq[f_idx0], freq[f_idx1] + f_res))
         ax.axis(False)
 
         plt.savefig(os.path.join('train', fig_title + '.png'), dpi=256)
