@@ -147,6 +147,8 @@ def main(args):
                         Crise_size = rise_size_oi[enu]
                         Cblf = closest_baseline_freq[enu]
 
+                        embed()
+                        quit()
                         rise_end_t = times_v[(times_v[idx_v] > Ct_idx) & (fish_freq[id_idx] < Cblf + Crise_size * 0.37)]
                         if len(rise_end_t) == 0:
                             right_time_bound[enu] = np.nan
