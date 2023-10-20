@@ -157,12 +157,12 @@ def main(args):
                             right_time_bound[enu] = rise_end_t[0]
                     # Create patch collection with specified colour/alpha
                     for enu in range(len(left_time_bound)):
-                        if ~np.isnan(right_time_bound[enu]):
+                        if np.isnan(right_time_bound[enu]):
                             continue
                         ax.add_patch.Rectangle((left_time_bound[enu], right_time_bound[enu]),
                                                (right_time_bound[enu] - left_time_bound[enu]),
                                                (upper_freq_bound[enu] - lower_freq_bound[enu]),
-                                               fill=False, color="k", linewidth=2)
+                                               fill=False, color="white", linewidth=2)
 
             plt.show()
 
