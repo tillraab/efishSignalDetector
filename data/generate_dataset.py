@@ -160,13 +160,12 @@ def main(args):
                     print(f't0: {left_time_bound}')
                     print(f't1: {right_time_bound}')
 
-                    plt.show()
                     # Create patch collection with specified colour/alpha
                     for enu in range(len(left_time_bound)):
                         if np.isnan(right_time_bound[enu]):
                             continue
                         ax.add_patch(
-                            Rectangle((left_time_bound[enu], right_time_bound[enu]),
+                            Rectangle((left_time_bound[enu], lower_freq_bound[enu]),
                                                (right_time_bound[enu] - left_time_bound[enu]),
                                                (upper_freq_bound[enu] - lower_freq_bound[enu]),
                                                fill=False, color="white", linewidth=2)
