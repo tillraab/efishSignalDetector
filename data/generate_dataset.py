@@ -126,7 +126,7 @@ def main(args):
                 ax.plot(times_v[rise_idx_oi], fish_freq[id_idx][rise_idx_oi], 'o', color='tab:red')
 
             plt.show(block=False)
-            time.sleep(2)
+            time.sleep(10)
             plt.close()
 
 
