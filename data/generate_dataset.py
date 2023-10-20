@@ -19,7 +19,7 @@ import os
 from IPython import embed
 
 from matplotlib.patches import Rectangle
-# from matplotlib.collections import PatchCollection
+from matplotlib.collections import PatchCollection
 
 
 def load_data(folder):
@@ -155,22 +155,36 @@ def main(args):
                             right_time_bound[enu] = np.nan
                         else:
                             right_time_bound[enu] = rise_end_t[0]
+
+                    left_time_bound -= 2
+                    right_time_bound *= 2
+                    lower_freq_bound -= 2
+                    upper_freq_bound += 0.2*rise_size_oi
+
                     print(f'f0: {lower_freq_bound}')
                     print(f'f1: {upper_freq_bound}')
                     print(f't0: {left_time_bound}')
                     print(f't1: {right_time_bound}')
 
                     # Create patch collection with specified colour/alpha
+                    bbox_col = []
                     for enu in range(len(left_time_bound)):
                         if np.isnan(right_time_bound[enu]):
                             continue
-                        ax.add_patch(
+                        bbox_col.append(
                             Rectangle((left_time_bound[enu], lower_freq_bound[enu]),
-                                               (right_time_bound[enu] - left_time_bound[enu]),
-                                               (upper_freq_bound[enu] - lower_freq_bound[enu]),
-                                               fill=False, color="white", linewidth=2)
+                                      (right_time_bound[enu] - left_time_bound[enu]),
+                                      (upper_freq_bound[enu] - lower_freq_bound[enu]),
+                                      fill=False, color="white", linewidth=2)
                         )
-
+                        # ax.add_patch(
+                        #     Rectangle((left_time_bound[enu], lower_freq_bound[enu]),
+                        #                        (right_time_bound[enu] - left_time_bound[enu]),
+                        #                        (upper_freq_bound[enu] - lower_freq_bound[enu]),
+                        #                        fill=False, color="white", linewidth=2)
+                        # )
+                    coll = PatchCollection(bbox_col, zorder=10)
+                    ax.add_collection(coll)
             plt.show()
 
 
