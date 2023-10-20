@@ -63,7 +63,8 @@ def main(folder):
         f1 = f0 + d_freq + freq_overlap
 
         present_freqs = EODf_v[(~np.isnan(ident_v)) &
-                               (t0 <= times_v[idx_v] <= t1)]
+                               (t0 <= times_v[idx_v]) &
+                               (times_v[idx_v]<= t1)]
         if len(present_freqs) == 0:
             continue
 
