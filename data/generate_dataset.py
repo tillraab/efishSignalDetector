@@ -64,7 +64,9 @@ def main(folder):
 
         present_freqs = EODf_v[(~np.isnan(ident_v)) &
                                (t0 <= times_v[idx_v]) &
-                               (times_v[idx_v]<= t1)]
+                               (times_v[idx_v]<= t1) &
+                               (EODf_v >= f0) &
+                               (EODf_v <= f1)]
         if len(present_freqs) == 0:
             continue
 
@@ -77,7 +79,7 @@ def main(folder):
         s_trans = transformed(log_s.unsqueeze(0))
 
 
-        fig_title = (f'{Path(folder).name}__{t0:.0f}s-{t1:.0f}s__{f0:.0f}-{f1:.0f}Hz').replace(' ', '0')
+        fig_title = (f'{Path(folder).name}__{t0:.0f}s-{t1:.0f}s__{f0:4.0f}-{f1:4.0f}Hz').replace(' ', '0')
         fig = plt.figure(figsize=(7, 7), num=fig_title)
         gs = gridspec.GridSpec(1, 2, width_ratios=(8, 1), wspace=0)# , bottom=0, left=0, right=1, top=1
         gs2 = gridspec.GridSpec(1, 1, bottom=0, left=0, right=1, top=1)#
