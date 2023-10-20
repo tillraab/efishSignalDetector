@@ -159,10 +159,12 @@ def main(args):
                     for enu in range(len(left_time_bound)):
                         if np.isnan(right_time_bound[enu]):
                             continue
-                        ax.add_patch.Rectangle((left_time_bound[enu], right_time_bound[enu]),
+                        ax.add_patch(
+                            Rectangle((left_time_bound[enu], right_time_bound[enu]),
                                                (right_time_bound[enu] - left_time_bound[enu]),
                                                (upper_freq_bound[enu] - lower_freq_bound[enu]),
                                                fill=False, color="white", linewidth=2)
+                        )
 
             plt.show()
 
