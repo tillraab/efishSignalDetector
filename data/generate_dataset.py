@@ -168,25 +168,15 @@ def main(args):
                     print(f't0: {left_time_bound}')
                     print(f't1: {right_time_bound}')
 
-                    # Create patch collection with specified colour/alpha
-                    bbox_col = []
                     for enu in range(len(left_time_bound)):
                         if np.isnan(right_time_bound[enu]):
                             continue
-                        # bbox_col.append(
-                        #     Rectangle((left_time_bound[enu], lower_freq_bound[enu]),
-                        #               (right_time_bound[enu] - left_time_bound[enu]),
-                        #               (upper_freq_bound[enu] - lower_freq_bound[enu]),
-                        #               fill=False, color="white", linewidth=2)
-                        # )
                         ax.add_patch(
                             Rectangle((left_time_bound[enu], lower_freq_bound[enu]),
                                                (right_time_bound[enu] - left_time_bound[enu]),
                                                (upper_freq_bound[enu] - lower_freq_bound[enu]),
                                                fill=False, color="white", linewidth=2, zorder=10)
                         )
-                    # coll = PatchCollection(bbox_col, zorder=10)
-                    # ax.add_collection(coll)
             plt.show()
 
 
@@ -194,7 +184,5 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Evaluated electrode array recordings with multiple fish.')
     parser.add_argument('folder', type=str, help='single recording analysis', default='')
     parser.add_argument('-d', "--dev", action="store_true", help="developer mode; no data saved")
-    # parser.add_argument('-x', type=int, nargs=2, default=[1272, 1282], help='x-borders of LED detect area (in pixels)')
-    # parser.add_argument('-y', type=int, nargs=2, default=[1500, 1516], help='y-borders of LED area (in pixels)')
     args = parser.parse_args()
     main(args)
