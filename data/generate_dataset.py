@@ -40,6 +40,9 @@ def load_data(folder):
     times_v = np.load(base_path / 'times.npy')
 
     rise_idx = np.load(base_path / 'analysis' / 'rise_idx.npy')
+    ff = np.load(base_path / 'analysis' / 'fish_freq.npy')
+    embed()
+    quit()
 
     return fill_freqs, fill_times, fill_spec, EODf_v, ident_v, idx_v, times_v, rise_idx
 
