@@ -52,7 +52,7 @@ def main(folder):
     d_time = 60*15
     time_overlap = 60*5
 
-    freq, times, spec, EODf_v, ident_v, idx_v, times_v = load_data(folder)
+    freq, times, spec, EODf_v, ident_v, idx_v, times_v, rise_idx = load_data(folder)
     f_res, t_res = freq[1] - freq[0], times[1] - times[0]
 
     unique_ids = np.unique(ident_v[~np.isnan(ident_v)])
