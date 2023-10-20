@@ -55,7 +55,7 @@ def main(folder):
         np.arange(0, times[-1], d_time),
         np.arange(min_freq, max_freq, d_freq)
     ),
-        total=(max_freq-min_freq)//d_freq * times[-1] // d_time
+        total=((max_freq-min_freq)//d_freq) * (times[-1] // d_time)
     )
 
     for t0, f0 in pic_base:
