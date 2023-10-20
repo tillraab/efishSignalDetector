@@ -156,10 +156,12 @@ def main(args):
                         else:
                             right_time_bound[enu] = rise_end_t[0]
 
-                    left_time_bound -= 2
-                    right_time_bound *= 2
-                    lower_freq_bound -= 2
-                    upper_freq_bound += 0.2*rise_size_oi
+                    dt_bbox = right_time_bound - left_time_bound
+                    df_bbox = upper_freq_bound - lower_freq_bound
+                    left_time_bound -= dt_bbox*0.1
+                    right_time_bound += dt_bbox*0.1
+                    lower_freq_bound -= df_bbox*0.1
+                    upper_freq_bound += df_bbox*0.1
 
                     print(f'f0: {lower_freq_bound}')
                     print(f'f1: {upper_freq_bound}')
