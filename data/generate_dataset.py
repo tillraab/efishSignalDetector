@@ -155,6 +155,7 @@ def main(args):
                             right_time_bound[enu] = np.nan
                         else:
                             right_time_bound[enu] = rise_end_t[0]
+                    plt.show()
                     # Create patch collection with specified colour/alpha
                     for enu in range(len(left_time_bound)):
                         if np.isnan(right_time_bound[enu]):
