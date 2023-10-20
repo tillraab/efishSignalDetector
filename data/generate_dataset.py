@@ -171,20 +171,20 @@ def main(args):
                     for enu in range(len(left_time_bound)):
                         if np.isnan(right_time_bound[enu]):
                             continue
-                        bbox_col.append(
-                            Rectangle((left_time_bound[enu], lower_freq_bound[enu]),
-                                      (right_time_bound[enu] - left_time_bound[enu]),
-                                      (upper_freq_bound[enu] - lower_freq_bound[enu]),
-                                      fill=False, color="white", linewidth=2)
-                        )
-                        # ax.add_patch(
+                        # bbox_col.append(
                         #     Rectangle((left_time_bound[enu], lower_freq_bound[enu]),
-                        #                        (right_time_bound[enu] - left_time_bound[enu]),
-                        #                        (upper_freq_bound[enu] - lower_freq_bound[enu]),
-                        #                        fill=False, color="white", linewidth=2)
+                        #               (right_time_bound[enu] - left_time_bound[enu]),
+                        #               (upper_freq_bound[enu] - lower_freq_bound[enu]),
+                        #               fill=False, color="white", linewidth=2)
                         # )
-                    coll = PatchCollection(bbox_col, zorder=10)
-                    ax.add_collection(coll)
+                        ax.add_patch(
+                            Rectangle((left_time_bound[enu], lower_freq_bound[enu]),
+                                               (right_time_bound[enu] - left_time_bound[enu]),
+                                               (upper_freq_bound[enu] - lower_freq_bound[enu]),
+                                               fill=False, color="white", linewidth=2, zorder=10)
+                        )
+                    # coll = PatchCollection(bbox_col, zorder=10)
+                    # ax.add_collection(coll)
             plt.show()
 
 
