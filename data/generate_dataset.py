@@ -116,9 +116,9 @@ def main(args):
 
             times_v_idx0, times_v_idx1 = np.argmin(np.abs(times_v - t0)), np.argmin(np.abs(times_v - t1))
             for id_idx in range(len(fish_freq)):
-                ax.plot(times_v[times_v_idx0:times_v_idx1], fish_freq[id_idx][times_v_idx0:times_v_idx1], marker='.', color='k')
+                ax.plot(times_v[times_v_idx0:times_v_idx1], fish_freq[id_idx][times_v_idx0:times_v_idx1], marker='.', color='k', markersize=4)
                 rise_idx_oi = np.array(rise_idx[id_idx][(rise_idx[id_idx] >= times_v_idx0) & (rise_idx[id_idx] <= times_v_idx1)], dtype=int)
-                ax.plot(times_v[rise_idx_oi], fish_freq[id_idx][rise_idx_oi], marker='o', color='tab:red')
+                ax.plot(times_v[rise_idx_oi], fish_freq[id_idx][rise_idx_oi], 'o', color='tab:red')
 
             plt.show()
 
