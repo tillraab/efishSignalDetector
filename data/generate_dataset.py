@@ -43,7 +43,7 @@ def load_data(folder):
 
 
 def main(folder):
-    min_freq, max_freq, d_freq, d_time, freq_overlap, time_overlap = (
+    min_freq, max_freq, d_freq, freq_overlap, d_time, time_overlap = (
         200, 1500, 200, 50, 60*15, 60*5)
 
     freq, times, spec, EODf_v, ident_v, idx_v, times_v = load_data(folder)
