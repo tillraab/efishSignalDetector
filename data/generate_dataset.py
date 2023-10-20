@@ -155,6 +155,11 @@ def main(args):
                             right_time_bound[enu] = np.nan
                         else:
                             right_time_bound[enu] = rise_end_t[0]
+                    print(f'f0: {lower_freq_bound}')
+                    print(f'f1: {upper_freq_bound}')
+                    print(f't0: {left_time_bound}')
+                    print(f't1: {right_time_bound}')
+
                     plt.show()
                     # Create patch collection with specified colour/alpha
                     for enu in range(len(left_time_bound)):
