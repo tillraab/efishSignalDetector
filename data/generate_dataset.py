@@ -47,12 +47,15 @@ def main(folder):
 
     unique_ids = np.unique(ident_v[~np.isnan(ident_v)])
 
+    f_res, t_res = freq[1] - freq[0], times[1] - times[0]
+
     for t0, f0 in tqdm(list(itertools.product(np.arange(0, times_v[-1], 60*15), np.arange(200, 1500, 200)))):
         t1 = t0 + 60*20
         f1 = f0 + 250
 
         f_idx0, f_idx1 = np.argmin(np.abs(freq - f0)), np.argmin(np.abs(freq - f1))
         t_idx0, t_idx1 = np.argmin(np.abs(times_v - t0)), np.argmin(np.abs(times_v - t1))
+
 
         s = torch.from_numpy(spec[f_idx0:f_idx1, t_idx0:t_idx1].copy()).type(torch.float32)
         log_s = torch.log10(s)
@@ -67,7 +70,7 @@ def main(folder):
         gs2 = gridspec.GridSpec(1, 1, bottom=0, left=0, right=1, top=1)#
         ax = fig.add_subplot(gs2[0, 0])
         # cax = fig.add_subplot(gs[0, 1])
-        im = ax.imshow(s_trans.squeeze(), cmap='gray', aspect='auto', origin='lower', extent=(times_v[t_idx0]/3600, times_v[t_idx1+1]/3600, freq[f_idx0], freq[f_idx1+1]))
+        im = ax.imshow(s_trans.squeeze(), cmap='gray', aspect='auto', origin='lower', extent=(times_v[t_idx0]/3600, times_v[t_idx1]/3600 + t_res, freq[f_idx0], freq[f_idx1] + f_res))
         # im = ax.imshow(log_s, cmap='gray', aspect='auto')
         # ax.invert_yaxis()
         # fig.colorbar(im, cax=cax)
