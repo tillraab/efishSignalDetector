@@ -73,7 +73,7 @@ def main(folder):
         # fig.colorbar(im, cax=cax)
         ax.axis(False)
 
-        plt.savefig(fig_title + '.png', dpi=256)
+        plt.savefig(os.path.join('train', fig_title + '.png'), dpi=256)
         plt.close()
     # # ax.imshow(spec[f0:f1, t0:t1], cmap='gray')
 
