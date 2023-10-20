@@ -119,7 +119,7 @@ def main(args):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Evaluated electrode array recordings with multiple fish.')
-    parser.add_argument('file', type=str, help='single recording analysis', default='')
+    parser.add_argument('folder', type=str, help='single recording analysis', default='')
     parser.add_argument('-d', "--dev", action="store_true", help="developer mode; no data saved")
     # parser.add_argument('-x', type=int, nargs=2, default=[1272, 1282], help='x-borders of LED detect area (in pixels)')
     # parser.add_argument('-y', type=int, nargs=2, default=[1500, 1516], help='y-borders of LED area (in pixels)')
