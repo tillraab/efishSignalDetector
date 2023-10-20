@@ -46,7 +46,10 @@ def load_data(folder):
     rise_idx = np.load(base_path / 'analysis' / 'rise_idx.npy')
     rise_size = np.load(base_path / 'analysis' / 'rise_size.npy')
 
-    return fill_freqs, fill_times, fill_spec, EODf_v, ident_v, idx_v, times_v, fish_freq, rise_idx, rise_size
+    fish_baseline_freq = np.load(base_path / 'analysis' / 'baseline_freqs.npy')
+    fish_baseline_freq_time = np.load(base_path / 'analysis' / 'baseline_freq_times.npy')
+
+    return fill_freqs, fill_times, fill_spec, EODf_v, ident_v, idx_v, times_v, fish_freq, rise_idx, rise_size, fish_baseline_freq, fish_baseline_freq_time
 
 def save_spec_pic(folder, s_trans, times, freq, t_idx0, t_idx1, f_idx0, f_idx1, t_res, f_res):
     fig_title = (f'{Path(folder).name}__{t0:.0f}s-{t1:.0f}s__{f0:4.0f}-{f1:4.0f}Hz').replace(' ', '0')
@@ -70,7 +73,8 @@ def main(args):
     d_time = 60*15
     time_overlap = 60*5
 
-    freq, times, spec, EODf_v, ident_v, idx_v, times_v, fish_freq, rise_idx, rise_size = load_data(args.folder)
+    freq, times, spec, EODf_v, ident_v, idx_v, times_v, fish_freq, rise_idx, rise_size, fish_baseline_freq, fish_baseline_freq_time = (
+        load_data(args.folder))
     f_res, t_res = freq[1] - freq[0], times[1] - times[0]
 
     unique_ids = np.unique(ident_v[~np.isnan(ident_v)])
@@ -125,6 +129,9 @@ def main(args):
                                            (rise_size[id_idx] >= 10)], dtype=int)
                 ax.plot(times_v[rise_idx_oi], fish_freq[id_idx][rise_idx_oi], 'o', color='tab:red')
 
+                if len(rise_idx_oi) > 0:
+                    embed()
+                    quit()
             plt.show()
 
 
