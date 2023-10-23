@@ -23,6 +23,6 @@ def create_model(num_classes: int) -> torch.nn.Module:
 
     in_features = model.roi_heads.box_predictor.cls_score.in_features
 
-    model.roi_heads.box_predictor = FastRCNNPredictor(in_features, num_classes)
+    model.roi_heads.box_predictor = FastRCNNPredictor(in_features, num_classes+1)
 
     return model

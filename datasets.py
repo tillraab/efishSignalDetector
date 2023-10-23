@@ -39,11 +39,19 @@ class CustomDataset(Dataset):
         Cbbox = self.bbox_df[self.bbox_df['image'] == image_name]
 
         labels = np.ones(len(Cbbox), dtype=int)
-        boxes = Cbbox.loc[:, ['x0', 'x1', 'y0', 'y1']].values
+        boxes = torch.as_tensor(Cbbox.loc[:, ['x0', 'y0', 'x1', 'y1']].values, dtype=torch.float32)
+
+        area = (boxes[:, 3] - boxes[:, 1]) * (boxes[:, 2] - boxes[:, 0])
+        # no crowd instances
+        iscrowd = torch.zeros((boxes.shape[0],), dtype=torch.int64)
 
         target = {}
         target["boxes"] = boxes
-        target["labels"] = labels
+        target["labels"] = torch.as_tensor(labels, dtype=torch.int64)
+        target["area"] = area
+        target["iscrowd"] = iscrowd
+        image_id = torch.tensor([idx])
+        target["image_id"] = image_id
 
         return img_tensor, target
 

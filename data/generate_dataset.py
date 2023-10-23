@@ -99,11 +99,18 @@ def bboxes_from_file(times_v, fish_freq, rise_idx, rise_size, fish_baseline_freq
             Crise_size = rise_size_oi[enu]
             Cblf = closest_baseline_freq[enu]
 
-            rise_end_t = times_v[(times_v > Ct_oi) & (fish_freq[id_idx] < Cblf + Crise_size * 0.37)]
+            rise_end_t = times_v[(times_v > Ct_oi) &
+                                 (fish_freq[id_idx] < Cblf + Crise_size * 0.37)]
             if len(rise_end_t) == 0:
                 right_time_bound[enu] = np.nan
             else:
                 right_time_bound[enu] = rise_end_t[0]
+
+        mask = (~np.isnan(right_time_bound) & ((right_time_bound - left_time_bound) > 1.))
+        left_time_bound = left_time_bound[mask]
+        right_time_bound = right_time_bound[mask]
+        lower_freq_bound = lower_freq_bound[mask]
+        upper_freq_bound = upper_freq_bound[mask]
 
         dt_bbox = right_time_bound - left_time_bound
         df_bbox = upper_freq_bound - lower_freq_bound
@@ -154,7 +161,7 @@ def main(args):
         for f in pd.unique(bbox_df['image']):
             eval_files.append(f.split('__')[0])
 
-    folders = [args.folders]
+    folders = [args.folder]
 
     for enu, folder in enumerate(folders):
         print(f'DataSet generation from {folder} | {enu+1}/{len(folders)}')
