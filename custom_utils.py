@@ -41,7 +41,7 @@ class SaveBestModel:
         if current_valid_loss < self.best_valid_loss:
             self.best_valid_loss = current_valid_loss
             print(f"\nBest validation loss: {self.best_valid_loss}")
-            print(f"\nSaving best model for epoch: {epoch + 1}\n")
+            print(f"Saving best model for epoch: {epoch + 1}")
             torch.save({
                 'epoch': epoch + 1,
                 'model_state_dict': model.state_dict(),
@@ -78,7 +78,6 @@ def save_loss_plot(OUT_DIR, train_loss, val_loss):
     valid_ax.set_ylabel('validation loss')
     figure_1.savefig(f"{OUT_DIR}/train_loss.png")
     figure_2.savefig(f"{OUT_DIR}/valid_loss.png")
-    print('SAVING PLOTS COMPLETE...')
 
     plt.close('all')
 
