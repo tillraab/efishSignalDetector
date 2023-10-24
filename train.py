@@ -2,7 +2,9 @@ from confic import (DEVICE, NUM_CLASSES, NUM_EPOCHS, OUTDIR, NUM_WORKERS, TRAIN_
 from model import create_model
 
 from tqdm.auto import tqdm
+
 from datasets import create_train_test_dataset, create_train_loader, create_valid_loader
+from custom_utils import Averager, SaveBestModel, save_model, save_loss_plot
 
 import torch
 import matplotlib.pyplot as plt
@@ -10,34 +12,81 @@ import time
 
 from IPython import embed
 
+def train(train_loader, model, optimizer):
+    print('Training')
+    global train_loss_list
+
+    prog_bar = tqdm(train_loader, total=len(train_loader))
+    for samples, targets in prog_bar:
+        images = list(image.to(DEVICE) for image in samples)
+
+        targets = [{k: v.to(DEVICE) for k, v in t.items()} for t in targets]
+
+        loss_dict = model(images, targets)
+
+        losses = sum(loss for loss in loss_dict.values())
+        loss_value = losses.item()
+        train_loss_hist.send(loss_value) # this is a global instance !!!
+        train_loss_list.append(loss_value) # check what exactly this does !!!
+
+        optimizer.zero_grad()
+        losses.backward()
+        optimizer.step()
+
+        prog_bar.set_description(desc=f"Loss: {loss_value:.4f}")
+
+    return train_loss_list
+
+
 if __name__ == '__main__':
     train_data, test_data = create_train_test_dataset(TRAIN_DIR)
     train_loader = create_train_loader(train_data)
     test_loader = create_train_loader(test_data)
 
-    model = create_model(num_classes=1)
+    model = create_model(num_classes=NUM_CLASSES)
     model = model.to(DEVICE)
 
     params = [p for p in model.parameters() if p.requires_grad]
     optimizer = torch.optim.SGD(params, lr=0.001, momentum=0.9, weight_decay=0.0005)
 
+    train_loss_hist = Averager()
+    val_loss_hist = Averager()
+    # train_itr = 1
+    # val_itr = 1
+    train_loss_list = []
+    val_loss_list = []
+
+    save_best_model = SaveBestModel()
+
     for epoch in range(NUM_EPOCHS):
-        prog_bar = tqdm(train_loader, total=len(train_loader))
-        for samples, targets in prog_bar:
-            images = list(image.to(DEVICE) for image in samples)
 
-            targets = [{k: v.to(DEVICE) for k, v in t.items()} for t in targets]
-            try:
-                loss_dict = model(images, targets)
-            except:
-                embed()
-                quit()
+        train_loss_hist.reset()
+        val_loss_hist.reset()
 
-            losses = sum(loss for loss in loss_dict.values())
-            loss_value = losses.item()
+        train_loss = train(train_loader, model, optimizer)
+        # val_loss = validate(train_loader, model, optimizer)
 
-            optimizer.zero_grad()
-            losses.backward()
-            optimizer.step()
+        save_best_model(
+            val_loss_hist.value, epoch, model, optimizer
+        )
 
-            prog_bar.set_description(desc=f"Loss: {loss_value:.4f}")
+        save_model(epoch, model, optimizer)
+
+        save_loss_plot(OUTDIR, train_loss, val_loss)
+
+        # prog_bar = tqdm(train_loader, total=len(train_loader))
+        # for samples, targets in prog_bar:
+        #     images = list(image.to(DEVICE) for image in samples)
+        #
+        #     targets = [{k: v.to(DEVICE) for k, v in t.items()} for t in targets]
+        #
+        #     loss_dict = model(images, targets)
+        #
+        #     losses = sum(loss for loss in loss_dict.values())
+        #     loss_value = losses.item()
+        #
+        #     optimizer.zero_grad()
+        #     losses.backward()
+        #     optimizer.step()
+        #
+        #     prog_bar.set_description(desc=f"Loss: {loss_value:.4f}")
