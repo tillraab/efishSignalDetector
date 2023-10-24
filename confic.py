@@ -1,7 +1,7 @@
 import torch
 import pathlib
 
-BATCH_SIZE = 4
+BATCH_SIZE = 32
 RESIZE_TO = 416
 NUM_EPOCHS = 20
 NUM_WORKERS = 4

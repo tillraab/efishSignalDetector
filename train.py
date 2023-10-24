@@ -45,6 +45,8 @@ def validate(test_loader, model, val_loss):
 
         targets = [{k: v.to(DEVICE) for k, v in t.items()} for t in targets]
 
+        embed()
+        quit()
         with torch.inference_mode():
             loss_dict = model(images, targets)
 

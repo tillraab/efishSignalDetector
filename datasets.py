@@ -102,8 +102,8 @@ if __name__ == '__main__':
         for s, t in zip(samples, targets):
             fig, ax = plt.subplots()
             ax.imshow(s.permute(1, 2, 0), aspect='auto')
-            for (x0, x1, y0, y1), l in zip(t['boxes'], t['labels']):
-                print(x0, x1, y0, y1, l)
+            for (x0, y0, x1, y1), l in zip(t['boxes'], t['labels']):
+                print(x0, y0, x1, y1, l)
                 ax.add_patch(
                     Rectangle((x0, y0),
                               (x1 - x0),
