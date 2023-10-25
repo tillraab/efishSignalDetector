@@ -112,23 +112,14 @@ def bboxes_from_file(times_v, fish_freq, rise_idx, rise_size, fish_baseline_freq
         lower_freq_bound = lower_freq_bound[mask]
         upper_freq_bound = upper_freq_bound[mask]
 
-        dt_bbox = right_time_bound - left_time_bound
-        df_bbox = upper_freq_bound - lower_freq_bound
-
-        # embed()
-        # quit()
-        # left_time_bound -= dt_bbox + 0.01 * (t1 - t0)
-        # right_time_bound += dt_bbox + 0.01 * (t1 - t0)
-        # lower_freq_bound -= df_bbox + 0.01 * (f1 - f0)
-        # upper_freq_bound += df_bbox + 0.01 * (f1 - f0)
+        # dt_bbox = right_time_bound - left_time_bound
+        # df_bbox = upper_freq_bound - lower_freq_bound
 
         left_time_bound -= 0.01 * (t1 - t0)
         right_time_bound += 0.05 * (t1 - t0)
         lower_freq_bound -= 0.01 * (f1 - f0)
         upper_freq_bound += 0.05 * (f1 - f0)
 
-        # embed()
-        # quit()
         mask2 = ((left_time_bound >= t0) &
                 (right_time_bound <= t1) &
                 (lower_freq_bound >= f0) &
@@ -150,15 +141,11 @@ def bboxes_from_file(times_v, fish_freq, rise_idx, rise_size, fish_baseline_freq
                          lower_freq_bound,
                          upper_freq_bound,
                          x0, y0, x1, y1])
-        # test_s = ['a', 'a', 'a', 'a']
         tmp_df = pd.DataFrame(
-            # index= [pic_save_str for i in range(len(left_time_bound))],
-            # index= test_s,
             data=bbox.T,
             columns=cols
         )
         bbox_df = pd.concat([bbox_df, tmp_df], ignore_index=True)
-        # bbox_df.append(tmp_df)
     return bbox_df
 
 def main(args):
@@ -200,6 +187,7 @@ def main(args):
         #     )
         plt.show()
 
+    # Hyperparameter
     min_freq = 200
     max_freq = 1500
     d_freq = 200
@@ -207,27 +195,33 @@ def main(args):
     d_time = 60*10
     time_overlap = 60*1
 
+    # init dataframe if not existent so far
+    eval_files = []
     if not os.path.exists(os.path.join('train', 'bbox_dataset.csv')):
         cols = ['image', 't0', 't1', 'f0', 'f1', 'x0', 'y0', 'x1', 'y1']
         bbox_df = pd.DataFrame(columns=cols)
 
+    # else load datafile ... and check for already regarded files (eval_files)
     else:
         bbox_df = pd.read_csv(os.path.join('train', 'bbox_dataset.csv'), sep=',', index_col=0)
         cols = list(bbox_df.keys())
-        eval_files = []
         # ToDo: make sure not same file twice
         for f in pd.unique(bbox_df['image']):
             eval_files.append(f.split('__')[0])
 
+    # find folders that have fine_specs...
     folders = list(f.parent for f in Path(args.folder).rglob('fill_times.npy'))
 
-    # embed()
-    # quit()
 
     for enu, folder in enumerate(folders):
         print(f'DataSet generation from {folder} | {enu+1}/{len(folders)}')
+        # check for those folders where rises are detected
         if not (folder/'analysis'/'rise_idx.npy').exists():
             continue
+
+        # embed()
+        # quit()
+        # ToDo: check if folder in eval_files ... is so: continue
 
         freq, times, spec, EODf_v, ident_v, idx_v, times_v, fish_freq, rise_idx, rise_size, fish_baseline_freq, fish_baseline_freq_time = (
             load_data(folder))
