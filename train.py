@@ -3,7 +3,7 @@ from model import create_model
 
 from tqdm.auto import tqdm
 
-from datasets import create_train_test_dataset, create_train_loader, create_valid_loader
+from datasets import create_train_loader, create_valid_loader, create_train_or_test_dataset
 from custom_utils import Averager, SaveBestModel, save_model, save_loss_plot
 
 import torch
@@ -62,7 +62,9 @@ def validate(test_loader, model, val_loss):
     return val_loss
 
 if __name__ == '__main__':
-    train_data, test_data = create_train_test_dataset(TRAIN_DIR)
+    train_data = create_train_or_test_dataset(TRAIN_DIR)
+    test_data = create_train_or_test_dataset(TRAIN_DIR, train=False)
+
     train_loader = create_train_loader(train_data)
     test_loader = create_train_loader(test_data)
 
