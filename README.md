@@ -50,7 +50,6 @@ im2 = ImageOps.grayscale(im1)
 * check other pretrained models from torchvision.models.detection, e.g. fasterrcnn_resnet50_fpn_v2
 
 ## config.py
-
 Containes Hyperparameters used by the scripts.
 
 ## ToDos:
@@ -60,6 +59,8 @@ Containes Hyperparameters used by the scripts.
 Classes and functions to save models and store loss values for later illustration.
 Also includes helper functions...
 
+## ToDos:
+
 ### train.py
 Code training the model using the stored images in ./data/dataset and the .csv files
 containing the bounding boxes meant for training. For each epoch test-loss (without 
@@ -68,9 +69,13 @@ of the previous epochs. If the new model is the best model, the model.state_dict
 ./model_outputs as best_model.pth.
 
 ## ToDos:
-* 
 
 ### inference.py
+Currently, this code performs predictions based in the test dataset (img and corresponding csv file).
+However, this code shall be used to infer totally unknown images. Prediction results are ilustrated 
+and stored in ./inference_output
 
+## ToDo:
+* implement path where no csv file is needed...
 
 
