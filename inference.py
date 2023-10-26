@@ -26,7 +26,7 @@ def plot_inference(img_tensor, output, target, detection_threshold):
             Rectangle((x0, y0),
                       (x1 - x0),
                       (y1 - y0),
-                      fill=False, color="tab:green", linewidth=2, zorder=10)
+                      fill=False, color="tab:green", linestyle='--', linewidth=2, zorder=10)
         )
     for (x0, y0, x1, y1), l in zip(target['boxes'], target['labels']):
         ax.add_patch(
