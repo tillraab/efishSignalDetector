@@ -32,7 +32,8 @@ def show_sample(img_tensor, outputs, detection_threshold):
         )
     plt.show()
 
-def infere_model(test_loader, model, detection_th=0.8)
+def infere_model(test_loader, model, detection_th=0.8):
+    pass
 
 if __name__ == '__main__':
     model = create_model(num_classes=NUM_CLASSES)
