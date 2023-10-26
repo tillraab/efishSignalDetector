@@ -55,7 +55,6 @@ im2 = ImageOps.grayscale(im1)
 Containes Hyperparameters used by the scripts.
 
 ### ToDos:
-* replace TRAIN_DIR with DATA_DIR everywhere !!!
 * Do we need the RESIZE_TO parameter ?
 
 ## custom_utils.py
