@@ -52,30 +52,30 @@ im2 = ImageOps.grayscale(im1)
 ## config.py
 Containes Hyperparameters used by the scripts.
 
-## ToDos:
+### ToDos:
 * replace TRAIN_DIR with DATA_DIR everywhere !!!
 
-### custom_utils.py
+## custom_utils.py
 Classes and functions to save models and store loss values for later illustration.
 Also includes helper functions...
 
-## ToDos:
+### ToDos:
 
-### train.py
+## train.py
 Code training the model using the stored images in ./data/dataset and the .csv files
 containing the bounding boxes meant for training. For each epoch test-loss (without 
 gradient tracking) is computed and used to infer whether the model is better than the one
 of the previous epochs. If the new model is the best model, the model.state_dict is saved in 
 ./model_outputs as best_model.pth.
 
-## ToDos:
+### ToDos:
 
-### inference.py
+## inference.py
 Currently, this code performs predictions based in the test dataset (img and corresponding csv file).
 However, this code shall be used to infer totally unknown images. Prediction results are ilustrated 
 and stored in ./inference_output
 
-## ToDo:
+### ToDo:
 * implement path where no csv file is needed...
 
 
