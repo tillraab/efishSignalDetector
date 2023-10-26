@@ -64,8 +64,7 @@ def create_train_or_test_dataset(path, train=True):
     else:
         print('Generate test dataset !')
         pfx='test'
-    embed()
-    quit()
+
     csv_candidates = list(Path(path).rglob(f'*{pfx}*.csv'))
     if len(csv_candidates) == 0:
         print(f'no .csv files for *{pfx}* found in {Path(path)}')

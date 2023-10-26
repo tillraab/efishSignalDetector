@@ -19,6 +19,6 @@ DATA_DIR = 'data/dataset'
 OUTDIR = 'model_outputs'
 INFERENCE_OUTDIR = 'inference_outputs'
 
-for required_folders in [TRAIN_DIR, OUTDIR, INFERENCE_OUTDIR]:
+for required_folders in [DATA_DIR, OUTDIR, INFERENCE_OUTDIR]:
     if not pathlib.Path(required_folders).exists():
         pathlib.Path(required_folders).mkdir(parents=True, exist_ok=True)
