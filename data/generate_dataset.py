@@ -67,7 +67,7 @@ def save_spec_pic(folder, s_trans, times, freq, t_idx0, t_idx1, f_idx0, f_idx1, 
                    extent=(times[t_idx0] / 3600, times[t_idx1] / 3600 + t_res, freq[f_idx0], freq[f_idx1] + f_res))
     ax.axis(False)
 
-    plt.savefig(os.path.join('train', fig_title), dpi=256)
+    plt.savefig(os.path.join('dataset', fig_title), dpi=256)
     plt.close()
 
     return fig_title, (size[0]*dpi, size[1]*dpi)
@@ -197,13 +197,13 @@ def main(args):
 
     # init dataframe if not existent so far
     eval_files = []
-    if not os.path.exists(os.path.join('train', 'bbox_dataset.csv')):
+    if not os.path.exists(os.path.join('dataset', 'bbox_dataset.csv')):
         cols = ['image', 't0', 't1', 'f0', 'f1', 'x0', 'y0', 'x1', 'y1']
         bbox_df = pd.DataFrame(columns=cols)
 
     # else load datafile ... and check for already regarded files (eval_files)
     else:
-        bbox_df = pd.read_csv(os.path.join('train', 'bbox_dataset.csv'), sep=',', index_col=0)
+        bbox_df = pd.read_csv(os.path.join('dataset', 'bbox_dataset.csv'), sep=',', index_col=0)
         cols = list(bbox_df.keys())
         # ToDo: make sure not same file twice
         for f in pd.unique(bbox_df['image']):
@@ -266,7 +266,7 @@ def main(args):
 
         if not args.dev:
             print('save')
-            bbox_df.to_csv(os.path.join('train', 'bbox_dataset.csv'), columns=cols, sep=',')
+            bbox_df.to_csv(os.path.join('dataset', 'bbox_dataset.csv'), columns=cols, sep=',')
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Evaluated electrode array recordings with multiple fish.')

@@ -41,4 +41,4 @@ def main(path):
     test_bbox.to_csv(path/'bbox_test.csv', columns=cols, sep=',')
 
 if __name__ == '__main__':
-    main(Path('./train'))
+    main(Path('./dataset'))

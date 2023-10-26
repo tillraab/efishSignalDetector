@@ -1,4 +1,4 @@
-from confic import (DEVICE, NUM_CLASSES, NUM_EPOCHS, OUTDIR, NUM_WORKERS, TRAIN_DIR)
+from confic import (DEVICE, NUM_CLASSES, NUM_EPOCHS, OUTDIR, NUM_WORKERS, DATA_DIR)
 from model import create_model
 
 from tqdm.auto import tqdm
@@ -65,8 +65,8 @@ def validate(test_loader, model, val_loss):
     return val_loss
 
 if __name__ == '__main__':
-    train_data = create_train_or_test_dataset(TRAIN_DIR)
-    test_data = create_train_or_test_dataset(TRAIN_DIR, train=False)
+    train_data = create_train_or_test_dataset(DATA_DIR)
+    test_data = create_train_or_test_dataset(DATA_DIR, train=False)
 
     train_loader = create_train_loader(train_data)
     test_loader = create_valid_loader(test_data)

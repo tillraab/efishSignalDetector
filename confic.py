@@ -15,7 +15,7 @@ CLASSES = ['__backgroud__', '1']
 
 NUM_CLASSES = len(CLASSES)
 
-TRAIN_DIR = 'data/train'
+DATA_DIR = 'data/dataset'
 OUTDIR = 'model_outputs'
 INFERENCE_OUTDIR = 'inference_outputs'
 

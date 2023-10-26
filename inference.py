@@ -6,7 +6,7 @@ import os
 from PIL import Image
 
 from model import create_model
-from confic import NUM_CLASSES, DEVICE, CLASSES, OUTDIR, TRAIN_DIR, INFERENCE_OUTDIR, IMG_DPI, IMG_SIZE
+from confic import NUM_CLASSES, DEVICE, CLASSES, OUTDIR, DATA_DIR, INFERENCE_OUTDIR, IMG_DPI, IMG_SIZE
 from datasets import create_train_or_test_dataset, create_valid_loader
 
 from IPython import embed
@@ -72,7 +72,7 @@ if __name__ == '__main__':
     model.load_state_dict(checkpoint["model_state_dict"])
     model.to(DEVICE).eval()
 
-    test_data = create_train_or_test_dataset(TRAIN_DIR, train=False)
+    test_data = create_train_or_test_dataset(DATA_DIR, train=False)
     test_loader = create_valid_loader(test_data)
 
     infere_model(test_loader, model)

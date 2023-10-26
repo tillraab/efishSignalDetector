@@ -14,7 +14,7 @@ from pathlib import Path
 from tqdm.auto import tqdm
 from PIL import Image
 
-from confic import (CLASSES, RESIZE_TO, TRAIN_DIR, BATCH_SIZE)
+from confic import (CLASSES, RESIZE_TO, DATA_DIR, BATCH_SIZE)
 from custom_utils import collate_fn
 
 from IPython import embed
@@ -96,8 +96,8 @@ def create_valid_loader(valid_dataset, num_workers=0):
 if __name__ == '__main__':
 
     # train_data, test_data = create_train_test_dataset(TRAIN_DIR)
-    train_data = create_train_or_test_dataset(TRAIN_DIR)
-    test_data = create_train_or_test_dataset(TRAIN_DIR, train=False)
+    train_data = create_train_or_test_dataset(DATA_DIR)
+    test_data = create_train_or_test_dataset(DATA_DIR, train=False)
 
     train_loader = create_train_loader(train_data)
     test_loader = create_valid_loader(test_data)
