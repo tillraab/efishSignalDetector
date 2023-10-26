@@ -79,8 +79,6 @@ if __name__ == '__main__':
 
     train_loss_hist = Averager()
     val_loss_hist = Averager()
-    # train_itr = 1
-    # val_itr = 1
     train_loss = []
     val_loss = []
 
