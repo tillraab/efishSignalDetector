@@ -44,9 +44,7 @@ def plot_inference(img_tensor, img_name, output, target, detection_threshold):
         )
 
     ax.set_axis_off()
-    embed()
-    quit()
-    plt.savefig(Path(INFERENCE_OUTDIR)/(os.path.splitext(img_name)[0] +'_inferred.png'), IMG_DPI)
+    plt.savefig(Path(INFERENCE_OUTDIR)/(os.path.splitext(img_name)[0] +'_inferred.png'), dpi=IMG_DPI)
     plt.close()
     # plt.show()
 
