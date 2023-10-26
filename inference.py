@@ -45,6 +45,9 @@ def infere_model(test_loader, model, detection_th=0.8):
     prog_bar = tqdm(test_loader, total=len(test_loader))
     for samples, targets in prog_bar:
         images = list(image.to(DEVICE) for image in samples)
+
+        embed()
+        quit()
         targets = [{k: v for k, v in t.items()} for t in targets]
 
         with torch.inference_mode():

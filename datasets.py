@@ -50,25 +50,12 @@ class CustomDataset(Dataset):
         target["iscrowd"] = iscrowd
         image_id = torch.tensor([idx])
         target["image_id"] = image_id
-        # target["image_name"] = image_name #ToDo: implement this as 3rd return...
+        target["image_name"] = image_name #ToDo: implement this as 3rd return...
 
         return img_tensor, target
 
     def __len__(self):
         return len(self.all_images)
-
-def create_train_test_dataset(path, test_size=0.2):
-    files = glob.glob(os.path.join(path, '*.png'))
-    train_test_idx = np.arange(len(files), dtype=int)
-    np.random.shuffle(train_test_idx)
-
-    train_idx = train_test_idx[int(test_size*len(train_test_idx)):]
-    test_idx = train_test_idx[:int(test_size*len(train_test_idx))]
-
-    train_data = CustomDataset(path)
-    test_data = CustomDataset(path)
-
-    return train_data, test_data
 
 def create_train_or_test_dataset(path, train=True):
     if train == True:
