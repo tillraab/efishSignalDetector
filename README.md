@@ -67,6 +67,8 @@ gradient tracking) is computed and used to infer whether the model is better tha
 of the previous epochs. If the new model is the best model, the model.state_dict is saved in 
 ./model_outputs as best_model.pth.
 
+## ToDos:
+* 
 
 ### inference.py
 

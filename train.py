@@ -69,7 +69,7 @@ if __name__ == '__main__':
     test_data = create_train_or_test_dataset(TRAIN_DIR, train=False)
 
     train_loader = create_train_loader(train_data)
-    test_loader = create_train_loader(test_data)
+    test_loader = create_valid_loader(test_data)
 
     model = create_model(num_classes=NUM_CLASSES)
     model = model.to(DEVICE)
