@@ -59,7 +59,7 @@ class CustomDataset(Dataset):
         target["iscrowd"] = iscrowd
         image_id = torch.tensor([idx])
         target["image_id"] = image_id
-        target["image_name"] = image_name
+        # target["image_name"] = image_name #ToDo: implement this as 3rd return...
 
         return img_tensor, target
 
