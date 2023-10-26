@@ -6,16 +6,17 @@ import os
 from PIL import Image
 
 from model import create_model
-from confic import NUM_CLASSES, DEVICE, CLASSES, OUTDIR, TRAIN_DIR
+from confic import NUM_CLASSES, DEVICE, CLASSES, OUTDIR, TRAIN_DIR, INFERENCE_OUTDIR, IMG_DPI, IMG_SIZE
 from datasets import create_train_or_test_dataset, create_valid_loader
 
 from IPython import embed
+from pathlib import Path
 from tqdm.auto import tqdm
 import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle
 
 def plot_inference(img_tensor, img_name, output, target, detection_threshold):
-    fig, ax = plt.subplots(figsize=(7, 7), num=img_name)
+    fig, ax = plt.subplots(figsize=IMG_SIZE, num=img_name)
     ax.imshow(img_tensor.cpu().squeeze().permute(1, 2, 0),  aspect='auto')
     for (x0, y0, x1, y1), l, score in zip(output['boxes'].cpu(), output['labels'].cpu(), output['scores'].cpu()):
         if score < detection_threshold:
@@ -36,7 +37,12 @@ def plot_inference(img_tensor, img_name, output, target, detection_threshold):
                       fill=False, color="white", linewidth=2, zorder=9)
         )
 
-    plt.show()
+    ax.set_axis_off()
+    embed()
+    quit()
+    plt.savefig(Path(INFERENCE_OUTDIR)/img_name/'_inferred.png', IMG_DPI)
+    plt.close()
+    # plt.show()
 
 def infere_model(test_loader, model, detection_th=0.8):
 
