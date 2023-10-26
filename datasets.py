@@ -24,6 +24,9 @@ class CustomDataset(Dataset):
         self.dir_path = dir_path
         self.bbox_df = bbox_df
 
+        embed()
+        quit()
+
         self.all_images = np.array(sorted(self.bbox_df['image']), dtype=str)
         self.image_paths = list(map(lambda x: Path(self.dir_path)/x, self.all_images))
         # embed()

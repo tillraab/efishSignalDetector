@@ -63,7 +63,6 @@ if __name__ == '__main__':
     test_data = create_train_or_test_dataset(TRAIN_DIR, train=False)
     test_loader = create_valid_loader(test_data)
 
-
     infere_model(test_loader, model)
 
     # detection_threshold = 0.8
