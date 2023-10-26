@@ -24,20 +24,8 @@ class CustomDataset(Dataset):
         self.dir_path = dir_path
         self.bbox_df = bbox_df
 
-        embed()
-        quit()
-
-        self.all_images = np.array(sorted(self.bbox_df['image']), dtype=str)
+        self.all_images = np.array(sorted(pd.unique(self.bbox_df['image'])), dtype=str)
         self.image_paths = list(map(lambda x: Path(self.dir_path)/x, self.all_images))
-        # embed()
-        # quit()
-
-        # self.image_paths = glob.glob(f'{self.dir_path}/*.png')
-        # self.all_images = [img_path.split(os.path.sep)[-1] for img_path in self.image_paths]
-        # self.all_images = np.array(sorted(self.all_images), dtype=str)
-        # if hasattr(use_idxs, '__len__'):
-        #     self.all_images = self.all_images[use_idxs]
-        # self.bbox_df = pd.read_csv(os.path.join(dir_path, 'bbox_dataset.csv'), sep=',', index_col=0)
 
     def __getitem__(self, idx):
         image_name = self.all_images[idx]
