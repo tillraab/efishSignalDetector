@@ -16,6 +16,9 @@ from matplotlib.patches import Rectangle
 
 def plot_inference(img_tensor, output, target, detection_threshold):
 
+    embed()
+    quit()
+
     fig, ax = plt.subplots(figsize=(7, 7), num=target['image_id'])
     ax.imshow(img_tensor.squeeze().permute(1, 2, 0), aspect='auto')
     for (x0, y0, x1, y1), l, score in zip(output[0]['boxes'].cpu(), output[0]['labels'].cpu(), output[0]['scores'].cpu()):
