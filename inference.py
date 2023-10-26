@@ -41,7 +41,6 @@ def plot_inference(img_tensor, output, target, detection_threshold):
         )
 
     plt.show()
-    embed()
 
 def infere_model(test_loader, model, detection_th=0.8):
 
