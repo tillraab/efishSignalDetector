@@ -19,7 +19,8 @@ def train(train_loader, model, optimizer, train_loss):
     for samples, targets in prog_bar:
         images = list(image.to(DEVICE) for image in samples)
 
-        targets = [{k: v.to(DEVICE) for k, v in t.items()} for t in targets]
+        # targets = [{k: v.to(DEVICE) for k, v in t.items()} for t in targets]
+        targets = [{k: v.to(DEVICE) for k, v in t.items() if k != 'image_name'} for t in targets]
 
         loss_dict = model(images, targets)
 
@@ -43,7 +44,9 @@ def validate(test_loader, model, val_loss):
     for samples, targets in prog_bar:
         images = list(image.to(DEVICE) for image in samples)
 
-        targets = [{k: v.to(DEVICE) for k, v in t.items()} for t in targets]
+        # targets = [{k: v.to(DEVICE) for k, v in t.items()} for t in targets]
+        targets = [{k: v.to(DEVICE) for k, v in t.items() if k != 'image_name'} for t in targets]
+
 
         with torch.inference_mode():
             loss_dict = model(images, targets)
