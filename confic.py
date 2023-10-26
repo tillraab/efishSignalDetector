@@ -11,16 +11,14 @@ IMG_DPI = 256
 
 DEVICE = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
-TRAIN_DIR = 'data/train'
-
 CLASSES = ['__backgroud__', '1']
 
 NUM_CLASSES = len(CLASSES)
 
+TRAIN_DIR = 'data/train'
 OUTDIR = 'model_outputs'
-if not pathlib.Path(OUTDIR).exists():
-    pathlib.Path(OUTDIR).mkdir(parents=True, exist_ok=True)
-
 INFERENCE_OUTDIR = 'inference_outputs'
-if not pathlib.Path(INFERENCE_OUTDIR).exists():
-    pathlib.Path(INFERENCE_OUTDIR).mkdir(parents=True, exist_ok=True)
+
+for required_folders in [TRAIN_DIR, OUTDIR, INFERENCE_OUTDIR]:
+    if not pathlib.Path(required_folders).exists():
+        pathlib.Path(required_folders).mkdir(parents=True, exist_ok=True)
