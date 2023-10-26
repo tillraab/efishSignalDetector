@@ -3,8 +3,8 @@
 Welcome to the efishSignalDetector, a **neural network** framework adapted 
 for detecting electrocommunication signals in wavetype electric fish based on 
 spectrogram images. The model itself is a pretrained **FasterRCNN** Model with a 
-**ResNet50** Backbone. Only the final predictor is replaced to not predict 91 classes 
-the coco-dataset it is trained to but the (currently) 1 category it should detect.
+**ResNet50** Backbone. Only the final predictor is replaced to not predict the 91 classes 
+present in the coco-dataset the model is trained to but the (currently) 1 category it should detect.
 
 ## Data preparation
 ### Data structure
@@ -29,7 +29,9 @@ training and one for testing (both also stored in ./data/dataset).
 
 ## model.py
 
-Contains the model and adjustements.
+Contains the detection neural network model with its adjustments. The model itself is a pretrained **FasterRCNN** Model with a 
+**ResNet50** Backbone. Only the final predictor is replaced to not predict the 91 classes 
+present in the coco-dataset the model is trained to but the (currently) 1 category it should detect.
 
 ### ToDos:
 * replace backbone entry to not take RGB input, but grayscale images or even spectrograms.
@@ -54,6 +56,7 @@ Containes Hyperparameters used by the scripts.
 
 ### ToDos:
 * replace TRAIN_DIR with DATA_DIR everywhere !!!
+* Do we need the RESIZE_TO parameter ?
 
 ## custom_utils.py
 Classes and functions to save models and store loss values for later illustration.
