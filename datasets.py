@@ -29,10 +29,11 @@ class InferenceDataset(Dataset):
 
     def __getitem__(self, idx):
         image_path = self.all_images[idx]
+        image_name = image_path.name
         img = Image.open(image_path)
         img_tensor = F.to_tensor(img.convert('RGB'))
 
-        return img_tensor
+        return img_tensor, image_name
 
 
 class CustomDataset(Dataset):

@@ -47,16 +47,15 @@ def infere_model(inference_loader, model, dataset_name, detection_th=0.8):
     print(f'Inference on dataset: {dataset_name}')
 
     prog_bar = tqdm(inference_loader, total=len(inference_loader))
-    for samples, targets in prog_bar:
+    for samples, img_names in prog_bar:
         images = list(image.to(DEVICE) for image in samples)
 
-        img_names = [t['image_name'] for t in targets]
-        targets = [{k: v for k, v in t.items() if k != 'image_name'} for t in targets]
+        # img_names = [t['image_name'] for t in targets]
 
         with torch.inference_mode():
             outputs = model(images)
 
-        for image, img_name, output, target in zip(images, img_names, outputs, targets):
+        for image, img_name, output in zip(images, img_names, outputs):
             plot_inference(image, img_name, output, detection_th, dataset_name)
 
 
