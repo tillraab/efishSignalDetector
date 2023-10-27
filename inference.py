@@ -17,7 +17,7 @@ import matplotlib.gridspec as gridspec
 from matplotlib.patches import Rectangle
 
 
-def plot_inference(img_tensor, img_name, output, target, detection_threshold):
+def plot_inference(img_tensor, img_name, output, detection_threshold):
 
     fig = plt.figure(figsize=IMG_SIZE, num=img_name)
     gs = gridspec.GridSpec(1, 1, bottom=0, left=0, right=1, top=1)  #
@@ -34,13 +34,6 @@ def plot_inference(img_tensor, img_name, output, target, detection_threshold):
                       (x1 - x0),
                       (y1 - y0),
                       fill=False, color="tab:green", linestyle='--', linewidth=2, zorder=10)
-        )
-    for (x0, y0, x1, y1), l in zip(target['boxes'], target['labels']):
-        ax.add_patch(
-            Rectangle((x0, y0),
-                      (x1 - x0),
-                      (y1 - y0),
-                      fill=False, color="white", linewidth=2, zorder=9)
         )
 
     ax.set_axis_off()

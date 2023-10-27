@@ -24,8 +24,8 @@ Use the script **./data/train_test_split.py** to split the original .csv file in
 training and one for testing (both also stored in ./data/dataset).
 
 ### ToDos:
-* FIX: name of generated png images. HINT {XXX:6.0f}.replace(' ', '0')
-* transfere images from ./data/train to ./data/dataset
+* FIX: name of generated png images. HINT: {XXX:6.0f}.replace(' ', '0')
+* on a long scale: only save raw file bounding boxes in frequency and time (t0, t1, f0, f1) and the hyperparameters of the corresponding spectrogram. USE THESE PARAMETERS IN DATASET_FN.
 
 ## model.py
 
@@ -50,6 +50,13 @@ im2 = ImageOps.grayscale(im1)
 ~~~
 
 * check other pretrained models from torchvision.models.detection, e.g. fasterrcnn_resnet50_fpn_v2
+
+## dataset.py
+Contains custom datasets and dataloader. These are based on the images that are stored in 
+./data/dataset. 
+
+### ToDos:
+* load/compute spectrogram directly and perform signal detection. E.g. spectrogram calculation as part of __getitem__
 
 ## config.py
 Containes Hyperparameters used by the scripts.
