@@ -70,6 +70,9 @@ def main(args):
 
     dataset_name = Path(args.folder).name
 
+    if not (Path(OUTDIR)/dataset_name).exists():
+        Path(Path(OUTDIR)/dataset_name).mkdir(parents=True, exist_ok=True)
+
     infere_model(inference_loader, model, dataset_name)
 
     # detection_threshold = 0.8
