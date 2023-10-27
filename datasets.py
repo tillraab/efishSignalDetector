@@ -115,7 +115,7 @@ def create_valid_loader(valid_dataset, num_workers=0):
     )
     return valid_loader
 
-def create_inference_loader(inference_dataset, num_workers=0)
+def create_inference_loader(inference_dataset, num_workers=0):
     inference_loader = DataLoader(
         inference_dataset,
         batch_size=BATCH_SIZE,
