@@ -69,10 +69,9 @@ def main(args):
     inference_loader = create_inference_loader(inference_data)
 
     dataset_name = Path(args.folder).name
-    embed()
-    quit()
-    if not (Path(OUTDIR)/dataset_name).exists():
-        Path(Path(OUTDIR)/dataset_name).mkdir(parents=True, exist_ok=True)
+
+    if not (Path(INFERENCE_OUTDIR)/dataset_name).exists():
+        Path(Path(INFERENCE_OUTDIR)/dataset_name).mkdir(parents=True, exist_ok=True)
 
     infere_model(inference_loader, model, dataset_name)
 
