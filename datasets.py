@@ -24,7 +24,8 @@ class InferenceDataset(Dataset):
     def __init__(self, dir_path):
         self.dir_path = dir_path
         self.all_images = sorted(list(Path(self.dir_path).rglob(f'*.png')))
-
+        embed()
+        quit()
     def __len__(self):
         return len(self.all_images)
 
