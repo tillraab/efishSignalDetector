@@ -69,6 +69,8 @@ def main(args):
     inference_data = InferenceDataset(args.folder)
     inference_loader = create_inference_loader(inference_data)
 
+    embed()
+    quit()
     dataset_name = Path(args.folder).name
 
     infere_model(inference_loader, model, dataset_name)
