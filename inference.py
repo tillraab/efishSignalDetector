@@ -4,10 +4,11 @@ import torchvision.transforms.functional as F
 import glob
 import os
 from PIL import Image
+import argparse
 
 from model import create_model
 from confic import NUM_CLASSES, DEVICE, CLASSES, OUTDIR, DATA_DIR, INFERENCE_OUTDIR, IMG_DPI, IMG_SIZE
-from datasets import create_train_or_test_dataset, create_valid_loader
+from datasets import InferenceDataset, create_inference_loader
 
 from IPython import embed
 from pathlib import Path
@@ -41,11 +42,11 @@ def plot_inference(img_tensor, img_name, output, detection_threshold):
     plt.close()
     # plt.show()
 
-def infere_model(test_loader, model, detection_th=0.8):
+def infere_model(inference_loader, model, detection_th=0.8):
 
-    print('Validation')
+    print('Inference')
 
-    prog_bar = tqdm(test_loader, total=len(test_loader))
+    prog_bar = tqdm(inference_loader, total=len(inference_loader))
     for samples, targets in prog_bar:
         images = list(image.to(DEVICE) for image in samples)
 
@@ -56,19 +57,21 @@ def infere_model(test_loader, model, detection_th=0.8):
             outputs = model(images)
 
         for image, img_name, output, target in zip(images, img_names, outputs, targets):
-            plot_inference(image, img_name, output, target, detection_th)
+            plot_inference(image, img_name, output, detection_th)
 
 
-if __name__ == '__main__':
+def main(args):
     model = create_model(num_classes=NUM_CLASSES)
     checkpoint = torch.load(f'{OUTDIR}/best_model.pth', map_location=DEVICE)
     model.load_state_dict(checkpoint["model_state_dict"])
     model.to(DEVICE).eval()
 
-    test_data = create_train_or_test_dataset(DATA_DIR, train=False)
-    test_loader = create_valid_loader(test_data)
+    inference_data = InferenceDataset(args.folder)
+    inference_loader = create_inference_loader(inference_data)
 
-    infere_model(test_loader, model)
+    embed()
+    quit()
+    infere_model(inference_loader, model)
 
     # detection_threshold = 0.8
     # frame_count = 0
@@ -86,4 +89,11 @@ if __name__ == '__main__':
     #
     #     print(len(outputs[0]['boxes']))
 
-        # show_sample(img_tensor, outputs, detection_threshold)
+    # show_sample(img_tensor, outputs, detection_threshold)
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Evaluated electrode array recordings with multiple fish.')
+    parser.add_argument('folder', type=str, help='folder to infer picutes', default='')
+    args = parser.parse_args()
+
+    main(args)

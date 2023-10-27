@@ -19,6 +19,25 @@ from custom_utils import collate_fn
 
 from IPython import embed
 
+
+class InferenceDataset(Dataset):
+    def __init__(self, dir_path):
+        self.dir_path = dir_path
+        self.all_images = sorted(list(Path(self.dir_path).rglob(f'*.png')))
+
+    def __len__(self):
+        return len(self.all_images)
+
+    def __getitem__(self, idx):
+        image_name = self.all_images[idx]
+        image_path = os.path.join(self.dir_path, image_name)
+
+        img = Image.open(image_path)
+        img_tensor = F.to_tensor(img.convert('RGB'))
+
+        return img_tensor
+
+
 class CustomDataset(Dataset):
     def __init__(self, dir_path, bbox_df):
         self.dir_path = dir_path
@@ -57,6 +76,7 @@ class CustomDataset(Dataset):
     def __len__(self):
         return len(self.all_images)
 
+
 def create_train_or_test_dataset(path, train=True):
     if train == True:
         pfx='train'
@@ -73,6 +93,7 @@ def create_train_or_test_dataset(path, train=True):
         bboxes = pd.read_csv(csv_candidates[0], sep=',', index_col=0)
     return CustomDataset(path, bboxes)
 
+
 def create_train_loader(train_dataset, num_workers=0):
     train_loader = DataLoader(
         train_dataset,
@@ -82,6 +103,8 @@ def create_train_loader(train_dataset, num_workers=0):
         collate_fn=collate_fn
     )
     return train_loader
+
+
 def create_valid_loader(valid_dataset, num_workers=0):
     valid_loader = DataLoader(
         valid_dataset,
@@ -91,6 +114,16 @@ def create_valid_loader(valid_dataset, num_workers=0):
         collate_fn=collate_fn
     )
     return valid_loader
+
+def create_inference_loader(inference_dataset, num_workers=0)
+    inference_loader = DataLoader(
+        inference_dataset,
+        batch_size=BATCH_SIZE,
+        shuffle=False,
+        num_workers=num_workers,
+        collate_fn=collate_fn
+    )
+    return inference_loader
 
 
 if __name__ == '__main__':
