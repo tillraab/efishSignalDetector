@@ -24,15 +24,11 @@ class InferenceDataset(Dataset):
     def __init__(self, dir_path):
         self.dir_path = dir_path
         self.all_images = sorted(list(Path(self.dir_path).rglob(f'*.png')))
-        embed()
-        quit()
     def __len__(self):
         return len(self.all_images)
 
     def __getitem__(self, idx):
-        image_name = self.all_images[idx]
-        image_path = os.path.join(self.dir_path, image_name)
-
+        image_path = self.all_images[idx]
         img = Image.open(image_path)
         img_tensor = F.to_tensor(img.convert('RGB'))
 
