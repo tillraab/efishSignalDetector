@@ -172,6 +172,13 @@ def main(args):
         folders = [folder for folder in folders if (folder / 'analysis' / 'rise_idx.npy').exists()]
         cols = ['image', 't0', 't1', 'f0', 'f1', 'x0', 'y0', 'x1', 'y1']
         bbox_df = pd.DataFrame(columns=cols)
+
+        # ToDo: Implement loading the old .csv file and upgrade it... how exactly I will determine after my vaccation
+        # bbox_df = pd.read_csv(os.path.join('dataset', 'bbox_dataset.csv'), sep=',', index_col=0)
+        # cols = list(bbox_df.keys())
+        # eval_files = []
+        # for f in pd.unique(bbox_df['image']):
+        #     eval_files.append(f.split('__')[0])
     else:
         print('generate inference dataset ... only image output')
         bbox_df = {}
