@@ -66,7 +66,7 @@ def save_spec_pic(folder, s_trans, times, freq, t_idx0, t_idx1, f_idx0, f_idx1, 
     dpi = 256
     f_res, t_res = freq[1] - freq[0], times[1] - times[0]
 
-    fig_title = (f'{Path(folder).name}__{times[t_idx0]:.0f}s-{times[t_idx1]:.0f}s__{freq[f_idx0]:4.0f}-{freq[f_idx1]:4.0f}Hz.png').replace(' ', '0')
+    fig_title = (f'{Path(folder).name}__{times[t_idx0]:5.0f}s-{times[t_idx1]:5.0f}s__{freq[f_idx0]:4.0f}-{freq[f_idx1]:4.0f}Hz.png').replace(' ', '0')
     fig = plt.figure(figsize=(7, 7), num=fig_title)
     gs = gridspec.GridSpec(1, 1, bottom=0, left=0, right=1, top=1)  #
     ax = fig.add_subplot(gs[0, 0])
