@@ -31,6 +31,7 @@ training and one for testing (both also stored in ./data/dataset).
 * on a long scale: only save raw file bounding boxes in frequency and time (t0, t1, f0, f1) and the hyperparameters of the corresponding spectrogram. USE THESE PARAMETERS IN DATASET_FN.
 * rescale image input to (7, 7) * 256 --> width/height in inch * dpi
 * when dataset input it spectrogram use resize transform.
+* replace datastructure with yolo structure ... per pic 1 .csv saved as .txt 
 
 ## model.py
 

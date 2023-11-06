@@ -12,7 +12,9 @@ import matplotlib.gridspec as gridspec
 from matplotlib.patches import Rectangle
 import time
 
+import pathlib
 from pathlib import Path
+
 from IPython import embed
 
 def train(train_loader, model, optimizer, train_loss):
@@ -64,6 +66,8 @@ def best_model_validation_with_plots(test_loader):
     model.load_state_dict(checkpoint["model_state_dict"])
     model.to(DEVICE).eval()
 
+    if not pathlib.Path(Path(INFERENCE_OUTDIR)/Path(DATA_DIR).name).exists():
+        pathlib.Path(Path(INFERENCE_OUTDIR)/Path(DATA_DIR).name).mkdir(parents=True, exist_ok=True)
     validate_with_plots(test_loader, model)
 
 
@@ -111,6 +115,7 @@ def plot_validation(img_tensor, img_name, output, target, detection_threshold):
         )
 
     ax.set_axis_off()
+
     plt.savefig(Path(INFERENCE_OUTDIR)/Path(DATA_DIR).name/(os.path.splitext(img_name)[0] +'_predicted.png'), dpi=IMG_DPI)
     plt.close()
     # plt.show()
