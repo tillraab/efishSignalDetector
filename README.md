@@ -29,6 +29,8 @@ training and one for testing (both also stored in ./data/dataset).
 
 ### ToDos:
 * on a long scale: only save raw file bounding boxes in frequency and time (t0, t1, f0, f1) and the hyperparameters of the corresponding spectrogram. USE THESE PARAMETERS IN DATASET_FN.
+* rescale image input to (7, 7) * 256 --> width/height in inch * dpi
+* when dataset input it spectrogram use resize transform.
 
 ## model.py
 
