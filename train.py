@@ -1,6 +1,6 @@
 from confic import (DEVICE, NUM_CLASSES, NUM_EPOCHS, OUTDIR, NUM_WORKERS, DATA_DIR, IMG_SIZE, IMG_DPI, INFERENCE_OUTDIR)
 from model import create_model
-from datasets import create_train_loader, create_valid_loader, create_train_or_test_dataset
+from datasets import create_train_loader, create_valid_loader, custom_train_test_split
 from custom_utils import Averager, SaveBestModel, save_model, save_loss_plot
 
 from tqdm.auto import tqdm
@@ -121,8 +121,13 @@ def plot_validation(img_tensor, img_name, output, target, detection_threshold):
     # plt.show()
 
 if __name__ == '__main__':
-    train_data = create_train_or_test_dataset(DATA_DIR)
-    test_data = create_train_or_test_dataset(DATA_DIR, train=False)
+    # train_data = create_train_or_test_dataset(DATA_DIR)
+    # test_data = create_train_or_test_dataset(DATA_DIR, train=False)
+    #
+    # train_loader = create_train_loader(train_data)
+    # test_loader = create_valid_loader(test_data)
+
+    train_data, test_data = custom_train_test_split()
 
     train_loader = create_train_loader(train_data)
     test_loader = create_valid_loader(test_data)

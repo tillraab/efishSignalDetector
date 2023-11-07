@@ -8,7 +8,7 @@ import argparse
 
 from model import create_model
 from confic import NUM_CLASSES, DEVICE, CLASSES, OUTDIR, DATA_DIR, INFERENCE_OUTDIR, IMG_DPI, IMG_SIZE
-from datasets import InferenceDataset, create_inference_loader
+from datasets import InferenceDataset, create_valid_loader
 
 from IPython import embed
 from pathlib import Path
@@ -66,7 +66,7 @@ def main(args):
     model.to(DEVICE).eval()
 
     inference_data = InferenceDataset(args.folder)
-    inference_loader = create_inference_loader(inference_data)
+    inference_loader = create_valid_loader(inference_data)
 
     dataset_name = Path(args.folder).name
 
