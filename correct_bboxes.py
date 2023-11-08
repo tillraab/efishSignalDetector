@@ -43,23 +43,33 @@ class Bbox_correct_UI(QMainWindow):
         self.gridLayout.addWidget(self.win, 0, 0)
 
         self.plot_handels[0].getViewBox().invertY(True)
+        self.plot_handels[0].getViewBox().setMouseEnabled(x=False, y=False)
         img = Image.open(img_path)
         img_gray = ImageOps.grayscale(img)
         img_array = np.array(img_gray).T
 
 
-        labels = np.loadtxt(label_path, delimiter=' ')
+        self.labels = np.loadtxt(label_path, delimiter=' ')
 
         self.plot_handels[0].setImage(np.array(img_array))
 
-        for l in labels:
+        self.ROIs = []
+        for enu, l in enumerate(self.labels):
             x_center, y_center, width, height = l[1:] * img_array.shape[1]
             x0, y0, = x_center-width/2, y_center-height/2
-            ROI = pg.RectROI((x0, y0), size=(width, height))
+            ROI = pg.RectROI((x0, y0), size=(width, height), removable=True)
+            # ROI.sigRemoveRequested.connect(lambda: )
+            self.ROIs.append(ROI)
             self.plot_widgets[0].addItem(ROI)
+
 
         self.plot_widgets[0].setYRange(0, img_array.shape[0], padding=0)
         self.plot_widgets[0].setXRange(0, img_array.shape[1], padding=0)
+
+    # def kill_me(self, ROI):
+    #     print('yay')
+    #     print(ROI)
+    #     self.win.removeItem(ROI)
 
 def main_UI():
     app = QApplication(sys.argv)  # create application
