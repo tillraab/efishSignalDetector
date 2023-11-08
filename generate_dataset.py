@@ -78,7 +78,7 @@ def load_trial_data(folder):
     return fish_freq, rise_idx, rise_size, fish_baseline_freq, fish_baseline_freq_time
 
 
-def save_spec_pic(folder, s_trans, times, freq, t_idx0, t_idx1, f_idx0, f_idx1, dataset_folder):
+def save_spec_pic(folder, s_trans, times, freq, t_idx0, t_idx1, f_idx0, f_idx1, pic_save_folder):
     f_res, t_res = freq[1] - freq[0], times[1] - times[0]
 
     fig_title = (f'{Path(folder).name}__{times[t_idx0]:5.0f}s-{times[t_idx1]:5.0f}s__{freq[f_idx0]:4.0f}-{freq[f_idx1]:4.0f}Hz.png').replace(' ', '0')
@@ -90,14 +90,14 @@ def save_spec_pic(folder, s_trans, times, freq, t_idx0, t_idx1, f_idx0, f_idx1, 
     ax.axis(False)
 
     # plt.savefig(os.path.join(dataset_folder, fig_title), dpi=IMG_DPI)
-    plt.savefig(Path(DATA_DIR)/fig_title, dpi=IMG_DPI)
+
+    plt.savefig(Path(pic_save_folder)/fig_title, dpi=IMG_DPI)
     plt.close()
 
-    return fig_title, (IMG_SIZE[0]*IMG_DPI, IMG_SIZE[1]*IMG_DPI)
+    return fig_title
 
 
-def bboxes_from_file(times_v, fish_freq, rise_idx, rise_size, fish_baseline_freq_time, fish_baseline_freq, pic_save_str,
-                     bbox_df, cols, width, height, t0, t1, f0, f1):
+def bboxes_from_file(times_v, fish_freq, rise_idx, rise_size, fish_baseline_freq_time, fish_baseline_freq, pic_save_str,t0, t1, f0, f1):
 
     times_v_idx0, times_v_idx1 = np.argmin(np.abs(times_v - t0)), np.argmin(np.abs(times_v - t1))
 
@@ -161,13 +161,6 @@ def bboxes_from_file(times_v, fish_freq, rise_idx, rise_size, fish_baseline_freq
         if len(left_time_bound) == 0:
             continue
 
-        # x0 = np.array((left_time_bound - t0) / (t1 - t0) * width, dtype=int)
-        # x1 = np.array((right_time_bound - t0) / (t1 - t0) * width, dtype=int)
-        #
-        # y0 = np.array((1 - (upper_freq_bound - f0) / (f1 - f0)) * height, dtype=int)
-        # y1 = np.array((1 - (lower_freq_bound - f0) / (f1 - f0)) * height, dtype=int)
-
-
         rel_x0 = np.array((left_time_bound - t0) / (t1 - t0), dtype=float)
         rel_x1 = np.array((right_time_bound - t0) / (t1 - t0), dtype=float)
 
@@ -184,15 +177,8 @@ def bboxes_from_file(times_v, fish_freq, rise_idx, rise_size, fish_baseline_freq
         all_width.extend(rel_width)
         all_height.extend(rel_height)
 
-        # bbox = np.array([[pic_save_str for i in range(len(left_time_bound))],
-        #                  left_time_bound,
-        #                  right_time_bound,
-        #                  lower_freq_bound,
-        #                  upper_freq_bound,
-        #                  x0, y0, x1, y1])
-
     bbox_yolo_style = np.array([
-        np.ones(len(all_x_center)),
+        np.ones(len(all_x_center), dtype=int),
         all_x_center,
         all_y_center,
         all_width,
@@ -205,16 +191,19 @@ def bboxes_from_file(times_v, fish_freq, rise_idx, rise_size, fish_baseline_freq
 
 def main(args):
     folders = list(f.parent for f in Path(args.folder).rglob('fill_times.npy'))
+    pic_save_folder = DATA_DIR if not args.inference else (Path('data') / Path(args.folder).name)
+
+    if len(folders) == 0:
+        print('no datasets containing fill_times.npy found')
 
     if not args.inference:
         print('generate training dataset only for files with detected rises')
         folders = [folder for folder in folders if (folder / 'analysis' / 'rise_idx.npy').exists()]
-        cols = ['image', 't0', 't1', 'f0', 'f1', 'x0', 'y0', 'x1', 'y1']
-        bbox_df = pd.DataFrame(columns=cols)
 
     else:
         print('generate inference dataset ... only image output')
-        bbox_df = {}
+        if not (Path('data') / Path(args.folder).name).exists():
+            (Path('data') / Path(args.folder).name).mkdir(parents=True, exist_ok=True)
 
     for enu, folder in enumerate(folders):
         print(f'DataSet generation from {folder} | {enu+1}/{len(folders)}')
@@ -259,52 +248,52 @@ def main(args):
             transformed = T.Normalize(mean=torch.mean(log_s), std=torch.std(log_s))
             s_trans = transformed(log_s.unsqueeze(0))
 
-            pic_save_str, (width, height) = save_spec_pic(folder, s_trans, times, freq, t_idx0, t_idx1, f_idx0, f_idx1, args.dataset_folder)
+            pic_save_str = save_spec_pic(folder, s_trans, times, freq, t_idx0, t_idx1, f_idx0, f_idx1, pic_save_folder)
 
             if not args.inference:
                 bbox_yolo_style = bboxes_from_file(times_v, fish_freq, rise_idx, rise_size,
                                                    fish_baseline_freq_time, fish_baseline_freq,
-                                                   pic_save_str, bbox_df, cols, width, height, t0, t1, f0, f1)
+                                                   pic_save_str,t0, t1, f0, f1)
 
             #######################################################################
-            if False:
-                if bbox_yolo_style.shape[0] >= 1:
-                    f_res, t_res = freq[1] - freq[0], times[1] - times[0]
-
-                    fig_title = (
-                        f'{Path(folder).name}__{times[t_idx0]:5.0f}s-{times[t_idx1]:5.0f}s__{freq[f_idx0]:4.0f}-{freq[f_idx1]:4.0f}Hz.png').replace(
-                        ' ', '0')
-                    fig = plt.figure(figsize=IMG_SIZE, num=fig_title)
-                    gs = gridspec.GridSpec(1, 1, bottom=0.1, left=0.1, right=0.95, top=0.95)  #
-                    ax = fig.add_subplot(gs[0, 0])
-                    ax.imshow(s_trans.squeeze(), cmap='gray', aspect='auto', origin='lower',
-                              extent=(times[t_idx0] / 3600, (times[t_idx1] + t_res) / 3600, freq[f_idx0], freq[f_idx1] + f_res))
-                    # ax.invert_yaxis()
-                    # ax.axis(False)
-
-                    for i in range(len(bbox_df)):
-                        # Cbbox = np.array(bbox_df.loc[i, ['x0', 'y0', 'x1', 'y1']].values, dtype=np.float32)
-                        Cbbox = bbox_df.loc[i, ['t0', 'f0', 't1', 'f1']]
-                        ax.add_patch(
-                            Rectangle((float(Cbbox['t0']) / 3600, float(Cbbox['f0'])),
-                                      float(Cbbox['t1']) / 3600 - float(Cbbox['t0']) / 3600,
-                                      float(Cbbox['f1']) - float(Cbbox['f0']),
-                                      fill=False, color="white", linestyle='-', linewidth=2, zorder=10)
-                        )
-
-                    # print(bbox_yolo_style.T)
-
-                    for bbox in bbox_yolo_style:
-                        x0 = bbox[1] - bbox[3]/2 # x_center - width/2
-                        y0 = 1 - (bbox[2] + bbox[4]/2) # x_center - width/2
-                        w = bbox[3]
-                        h = bbox[4]
-                        ax.add_patch(
-                            Rectangle((x0, y0), w, h,
-                                      fill=False, color="k", linestyle='--', linewidth=2, zorder=10,
-                                      transform=ax.transAxes)
-                        )
-                    plt.show()
+            # if False:
+            #     if bbox_yolo_style.shape[0] >= 1:
+            #         f_res, t_res = freq[1] - freq[0], times[1] - times[0]
+            #
+            #         fig_title = (
+            #             f'{Path(folder).name}__{times[t_idx0]:5.0f}s-{times[t_idx1]:5.0f}s__{freq[f_idx0]:4.0f}-{freq[f_idx1]:4.0f}Hz.png').replace(
+            #             ' ', '0')
+            #         fig = plt.figure(figsize=IMG_SIZE, num=fig_title)
+            #         gs = gridspec.GridSpec(1, 1, bottom=0.1, left=0.1, right=0.95, top=0.95)  #
+            #         ax = fig.add_subplot(gs[0, 0])
+            #         ax.imshow(s_trans.squeeze(), cmap='gray', aspect='auto', origin='lower',
+            #                   extent=(times[t_idx0] / 3600, (times[t_idx1] + t_res) / 3600, freq[f_idx0], freq[f_idx1] + f_res))
+            #         # ax.invert_yaxis()
+            #         # ax.axis(False)
+            #
+            #         for i in range(len(bbox_df)):
+            #             # Cbbox = np.array(bbox_df.loc[i, ['x0', 'y0', 'x1', 'y1']].values, dtype=np.float32)
+            #             Cbbox = bbox_df.loc[i, ['t0', 'f0', 't1', 'f1']]
+            #             ax.add_patch(
+            #                 Rectangle((float(Cbbox['t0']) / 3600, float(Cbbox['f0'])),
+            #                           float(Cbbox['t1']) / 3600 - float(Cbbox['t0']) / 3600,
+            #                           float(Cbbox['f1']) - float(Cbbox['f0']),
+            #                           fill=False, color="white", linestyle='-', linewidth=2, zorder=10)
+            #             )
+            #
+            #         # print(bbox_yolo_style.T)
+            #
+            #         for bbox in bbox_yolo_style:
+            #             x0 = bbox[1] - bbox[3]/2 # x_center - width/2
+            #             y0 = 1 - (bbox[2] + bbox[4]/2) # x_center - width/2
+            #             w = bbox[3]
+            #             h = bbox[4]
+            #             ax.add_patch(
+            #                 Rectangle((x0, y0), w, h,
+            #                           fill=False, color="k", linestyle='--', linewidth=2, zorder=10,
+            #                           transform=ax.transAxes)
+            #             )
+            #         plt.show()
             #######################################################################
 
         # if not args.inference:
@@ -314,11 +303,7 @@ def main(args):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Evaluated electrode array recordings with multiple fish.')
     parser.add_argument('folder', type=str, help='single recording analysis', default='')
-    parser.add_argument('-d', "--dataset_folder", type=str, help='designated datasef folder', default=DATA_DIR)
-    parser.add_argument('-i', "--inference", action="store_true", help="generate inference dataset. Img only")
+    parser.add_argument('-i', "--inference", action="store_true")
     args = parser.parse_args()
-
-    if not Path(args.dataset_folder).exists():
-        Path(args.dataset_folder).mkdir(parents=True, exist_ok=True)
 
     main(args)
