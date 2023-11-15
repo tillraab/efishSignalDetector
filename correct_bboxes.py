@@ -13,6 +13,8 @@ import torchvision.transforms.functional as F
 from IPython import embed
 import pathlib
 
+NONE_CHECKED_CHECKER_COLORS = ['red', 'black']
+
 class ImageWithBbox(pg.GraphicsLayoutWidget):
 # class ImageWithBbox(pg.ImageView):
     def __init__(self, img_path, parent=None):
@@ -83,10 +85,7 @@ class Bbox_correct_UI(QMainWindow):
         super(Bbox_correct_UI, self).__init__(parent)
 
         self.data_path = data_path
-        files = sorted(list(pathlib.Path(self.data_path).absolute().rglob('*images/*.png')))
-
-        # embed()
-        # quit()
+        self.files = sorted(list(pathlib.Path(self.data_path).absolute().rglob('*images/*.png')))
 
         rec = QApplication.desktop().screenGeometry()
         height = rec.height()
@@ -102,7 +101,7 @@ class Bbox_correct_UI(QMainWindow):
         self.setCentralWidget(self.central_widget)
 
         # image widget
-        self.current_img = ImageWithBbox(files[0], parent=self)
+        self.current_img = ImageWithBbox(self.files[0], parent=self)
         self.central_Layout.addWidget(self.current_img, 4)
         # image select widget
         self.scroll = QScrollArea()             # Scroll Area which contains the widgets, set as the centralWidget
@@ -111,13 +110,8 @@ class Bbox_correct_UI(QMainWindow):
 
         self.highlighted_label = None
         self.all_labels = []
-        # embed()
-        # quit()
-        self.file_dict = pd.DataFrame(
-            {'name': [f.name for f in files],
-             'files': files,
-             'text_color': ['red' for i in range(len(files))]} # change this to locked
-        )
+
+        self.load_or_create_file_dict()
 
         for i in range(len(self.file_dict)):
             label = QLabel(f'{self.file_dict["name"][i]}')
@@ -129,11 +123,11 @@ class Bbox_correct_UI(QMainWindow):
 
             if i == 0:
                 label.setStyleSheet("border: 2px solid black; "
-                                    "color : %s;" % (self.file_dict['text_color'][i]))
+                                    "color : %s;" % (NONE_CHECKED_CHECKER_COLORS[self.file_dict['checked'][i]]))
                 self.highlighted_label = label
             else:
                 label.setStyleSheet("border: 1px solid gray; "
-                                    "color : %s;" % (self.file_dict['text_color'][i]))
+                                    "color : %s;" % (NONE_CHECKED_CHECKER_COLORS[self.file_dict['checked'][i]]))
             self.vbox.addWidget(label)
             self.all_labels.append(label)
 
@@ -148,20 +142,56 @@ class Bbox_correct_UI(QMainWindow):
 
         self.add_actions()
 
+    def load_or_create_file_dict(self):
+        csvs_im_data_path = list(pathlib.Path(self.data_path).absolute().rglob('*file_dict.csv'))
+        if len(csvs_im_data_path) == 0:
+            self.file_dict = pd.DataFrame(
+                {'name': [f.name for f in self.files],
+                 'files': self.files,
+                 'checked': np.zeros(len(self.files), dtype=int)} # change this to locked
+            )
+        else:
+            self.file_dict = pd.read_csv(csvs_im_data_path[0], sep=',')
+
+    def save_file_dict(self):
+        self.file_dict.to_csv(pathlib.Path(self.data_path)/'file_dict.csv', sep=',', index=False)
+
     def label_clicked(self, clicked_label):
         if self.highlighted_label:
             hl_mask = self.file_dict['name'] == self.highlighted_label.text()
-            hl_label_name, _, hl_label_text_color = self.file_dict[hl_mask].values[0]
+            hl_label_name, _, hl_checked = self.file_dict[hl_mask].values[0]
             self.highlighted_label.setStyleSheet("border: 1px solid gray; "
-                                                 "color: %s;" % (hl_label_text_color))
+                                                 "color: %s;" % (NONE_CHECKED_CHECKER_COLORS[hl_checked]))
 
         mask = self.file_dict['name'] == clicked_label.text()
-        new_name, new_file, new_text_color = self.file_dict[mask].values[0]
+        new_name, new_file, new_checked = self.file_dict[mask].values[0]
         clicked_label.setStyleSheet("border: 2px solid black;"
-                                    "color: %s;" % (new_text_color))
+                                    "color: %s;" % (NONE_CHECKED_CHECKER_COLORS[new_checked]))
         self.highlighted_label = clicked_label
 
         self.switch_to_new_file(new_file, new_name)
+
+    def lock_file(self):
+
+        hl_mask = self.file_dict['name'] == self.highlighted_label.text()
+        hl_label_name, _, hl_checked = self.file_dict[hl_mask].values[0]
+
+        # ToDo: do everything with the index instead of mask
+        df_idx = self.file_dict.loc[self.file_dict['name'] == self.highlighted_label.text()].index.values[0]
+        self.file_dict.at[df_idx, 'checked'] = 1
+
+        self.highlighted_label.setStyleSheet("border: 1px solid gray; "
+                                             "color: 'black';")
+
+        new_idx = df_idx + 1 if df_idx < len(self.file_dict)-1 else 0
+        new_name, new_file, new_checked = self.file_dict.iloc[new_idx].values
+
+        self.all_labels[new_idx].setStyleSheet("border: 2px solid black;" 
+                                               "color: %s;" % (NONE_CHECKED_CHECKER_COLORS[new_checked]))
+        self.highlighted_label = self.all_labels[new_idx]
+
+        self.switch_to_new_file(new_file, new_name)
+
 
     def switch_to_new_file(self, new_file, new_name):
         self.readout_rois()
@@ -189,37 +219,17 @@ class Bbox_correct_UI(QMainWindow):
         new_labels = np.array(new_labels)
         np.savetxt(self.current_img.label_path, new_labels)
 
-    def lock_file(self):
-
-        hl_mask = self.file_dict['name'] == self.highlighted_label.text()
-        hl_label_name, _, hl_label_text_color = self.file_dict[hl_mask].values[0]
-
-        # ToDo: do everything with the index instead of mask
-        df_idx = self.file_dict.loc[self.file_dict['name'] == self.highlighted_label.text()].index.values[0]
-        self.file_dict.iloc[df_idx]['text_color'] = 'black'
-
-        self.highlighted_label.setStyleSheet("border: 1px solid gray; "
-                                             "color: 'black';")
-
-        new_idx = df_idx + 1 if df_idx < len(self.file_dict)-1 else 0
-        new_name, new_file, new_color = self.file_dict.iloc[new_idx].values
-
-        self.all_labels[new_idx].setStyleSheet("border: 2px solid black;" 
-                                               "color: %s;" % (new_color))
-        self.highlighted_label = self.all_labels[new_idx]
-
-        self.switch_to_new_file(new_file, new_name)
-        # embed()
-        # quit()
-        # go to next
-        pass
-
     def add_actions(self):
         self.lock_file_act = QAction('loc', self)
         self.lock_file_act.triggered.connect(self.lock_file)
         self.lock_file_act.setShortcut(Qt.Key_Space)
-
         self.addAction(self.lock_file_act)
+
+    def closeEvent(self, *args, **kwargs):
+        super(QMainWindow, self).closeEvent(*args, **kwargs)
+        self.readout_rois()
+        self.save_file_dict()
+        print ("you just closed the pyqt window!!! you are awesome!!!")
 
 def main_UI():
     app = QApplication(sys.argv)  # create application
