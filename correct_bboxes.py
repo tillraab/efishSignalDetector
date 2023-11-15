@@ -142,6 +142,8 @@ class Bbox_correct_UI(QMainWindow):
 
         self.add_actions()
 
+        self.init_MenuBar()
+
     def load_or_create_file_dict(self):
         csvs_im_data_path = list(pathlib.Path(self.data_path).absolute().rglob('*file_dict.csv'))
         if len(csvs_im_data_path) == 0:
@@ -219,17 +221,65 @@ class Bbox_correct_UI(QMainWindow):
         new_labels = np.array(new_labels)
         np.savetxt(self.current_img.label_path, new_labels)
 
+    def export_validated_data(self):
+        fd = QFileDialog()
+        export_path = fd.getExistingDirectory(self, 'Select Directory')
+        if export_path:
+            embed()
+            quit()
+            # ToDo: copy the validated files and delete from csv
+            # ToDo: copy entries to new/exten csv
+            # only files that are not in the training dataset so far
+            print(export_path)
+        else:
+            print('nope')
+            pass
+
+    def import_data(self):
+        fd = QFileDialog()
+        import_path = fd.getExistingDirectory(self, 'Select Directory')
+        if import_path:
+            # ToDo: copy the UN validated files and add them to csv
+            # only files that are not in the current folder
+            print(import_path)
+        else:
+            print('nope')
+            pass
+
+    def open(self):
+        # ToDo: to be implemented
+        pass
+
+    def init_MenuBar(self):
+        menubar = self.menuBar() # needs QMainWindow ?!
+        file = menubar.addMenu('&File') # create file menu ... accessable with alt+F
+        file.addActions([self.Act_open, self.Act_export, self.Act_exit])
+
+        edit = menubar.addMenu('&Help')
+        # edit.addActions([self.Act_undo, self.Act_unassigned_funds])
+
     def add_actions(self):
         self.lock_file_act = QAction('loc', self)
         self.lock_file_act.triggered.connect(self.lock_file)
         self.lock_file_act.setShortcut(Qt.Key_Space)
         self.addAction(self.lock_file_act)
 
+        self.Act_open = QAction('&Open', self)
+        # self.Act_open.setStatusTip('Open file')
+        self.Act_open.triggered.connect(self.open) # ToDo: implement this fn
+
+        self.Act_export = QAction('&Export', self)
+        # self.Act_export.setStatusTip('Open file')
+        self.Act_export.triggered.connect(self.export_validated_data)
+
+        self.Act_exit = QAction('&Exit', self)  # trigger with alt+E
+        self.Act_exit.setShortcut(Qt.Key_Q)
+        self.Act_exit.triggered.connect(self.close)
+
     def closeEvent(self, *args, **kwargs):
         super(QMainWindow, self).closeEvent(*args, **kwargs)
         self.readout_rois()
         self.save_file_dict()
-        print ("you just closed the pyqt window!!! you are awesome!!!")
 
 def main_UI():
     app = QApplication(sys.argv)  # create application
