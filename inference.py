@@ -54,7 +54,6 @@ def infere_model(inference_loader, model, dataset_name, detection_th=0.8):
 
         with torch.inference_mode():
             outputs = model(images)
-            # ToDo: save outputs in label folder !
 
         for image, img_name, output in zip(images, img_names, outputs):
             # x0, y0, x1, y1
