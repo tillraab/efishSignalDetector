@@ -54,9 +54,33 @@ def infere_model(inference_loader, model, dataset_name, detection_th=0.8):
 
         with torch.inference_mode():
             outputs = model(images)
+            # ToDo: save outputs in label folder !
 
         for image, img_name, output in zip(images, img_names, outputs):
+            # x0, y0, x1, y1
+
+            yolo_labels = []
+            # for (x0, y0, x1, y1) in output['boxes'].cpu().numpy():
+            for Cbbox, score in zip(output['boxes'].cpu().numpy(), output['scores'].cpu().numpy()):
+                if score < detection_th:
+                    continue
+                rel_x0 = Cbbox[0] / image.shape[-2]
+                rel_y0 = Cbbox[1] / image.shape[-2]
+                rel_x1 = Cbbox[2] / image.shape[-2]
+                rel_y1 = Cbbox[3] / image.shape[-2]
+
+                rel_x_center = rel_x1 - (rel_x1 - rel_x0) / 2
+                rel_y_center = rel_y1 - (rel_y1 - rel_y0) / 2
+                rel_width = rel_x1 - rel_x0
+                rel_height = rel_y1 - rel_y0
+
+                yolo_labels.append([1, rel_x_center, rel_y_center, rel_width, rel_height])
+
+            label_path = Path('data') / dataset_name / 'labels' / Path(img_name).with_suffix('.txt')
+            np.savetxt(label_path, yolo_labels)
+
             plot_inference(image, img_name, output, detection_th, dataset_name)
+
 
 
 def main(args):

@@ -26,8 +26,8 @@ DELTA_TIME = 60*10
 TIME_OVERLAP = 60*1
 
 # output parameters
-DATA_DIR = 'data/images'
-LABEL_DIR = 'data/labels'
+DATA_DIR = 'data/rise_training/images'
+LABEL_DIR = 'data/rise_training/labels'
 OUTDIR = 'model_outputs'
 INFERENCE_OUTDIR = 'inference_outputs'
 for required_folders in [DATA_DIR, OUTDIR, INFERENCE_OUTDIR, LABEL_DIR]:

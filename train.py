@@ -121,11 +121,6 @@ def plot_validation(img_tensor, img_name, output, target, detection_threshold):
     # plt.show()
 
 if __name__ == '__main__':
-    # train_data = create_train_or_test_dataset(DATA_DIR)
-    # test_data = create_train_or_test_dataset(DATA_DIR, train=False)
-    #
-    # train_loader = create_train_loader(train_data)
-    # test_loader = create_valid_loader(test_data)
 
     train_data, test_data = custom_train_test_split()
 

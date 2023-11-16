@@ -87,11 +87,13 @@ class Bbox_correct_UI(QMainWindow):
         self.data_path = data_path
         self.files = sorted(list(pathlib.Path(self.data_path).absolute().rglob('*images/*.png')))
 
+        self.close_without_saving_rois = False
+
         rec = QApplication.desktop().screenGeometry()
         height = rec.height()
         width = rec.width()
         self.resize(int(.8 * width), int(.8 * height))
-        self.setWindowTitle('efishSignalTracker')  # set window title
+
 
         # widget and layout
         self.central_widget = QWidget(self)
@@ -100,18 +102,22 @@ class Bbox_correct_UI(QMainWindow):
         self.central_widget.setLayout(self.central_Layout)
         self.setCentralWidget(self.central_widget)
 
+        ###########
+        self.highlighted_label = None
+        self.all_labels = []
+        self.load_or_create_file_dict()
+
+        new_name, new_file, new_checked = self.file_dict.iloc[0].values
+        self.setWindowTitle(f'efishSignalTracker | {new_name} | {self.file_dict["checked"].sum()}/{len(self.file_dict)}')
+
         # image widget
-        self.current_img = ImageWithBbox(self.files[0], parent=self)
+        self.current_img = ImageWithBbox(new_file, parent=self)
         self.central_Layout.addWidget(self.current_img, 4)
+
         # image select widget
         self.scroll = QScrollArea()             # Scroll Area which contains the widgets, set as the centralWidget
         self.widget = QWidget()                 # Widget that contains the collection of Vertical Box
         self.vbox = QVBoxLayout()
-
-        self.highlighted_label = None
-        self.all_labels = []
-
-        self.load_or_create_file_dict()
 
         for i in range(len(self.file_dict)):
             label = QLabel(f'{self.file_dict["name"][i]}')
@@ -198,13 +204,15 @@ class Bbox_correct_UI(QMainWindow):
     def switch_to_new_file(self, new_file, new_name):
         self.readout_rois()
 
-        self.setWindowTitle(f'efishSignalTracker | {new_name}')
+        self.setWindowTitle(f'efishSignalTracker | {new_name} | {self.file_dict["checked"].sum()}/{len(self.file_dict)}')
 
         self.central_Layout.removeWidget(self.current_img)
         self.current_img = ImageWithBbox(new_file, parent=self)
         self.central_Layout.insertWidget(0, self.current_img, 4)
 
     def readout_rois(self):
+        if self.close_without_saving_rois:
+            return
         new_labels = []
         for roi in self.current_img.ROIs:
             x0, y0 = roi.pos()
@@ -225,29 +233,33 @@ class Bbox_correct_UI(QMainWindow):
         fd = QFileDialog()
         export_path = fd.getExistingDirectory(self, 'Select Directory')
         if export_path:
-            embed()
-            quit()
-            # ToDo: copy the validated files and delete from csv
-            # ToDo: copy entries to new/exten csv
-            # only files that are not in the training dataset so far
-            print(export_path)
-        else:
-            print('nope')
-            pass
+            export_idxs = list(self.file_dict['files'][self.file_dict['checked'] == 1].index)
+            keep_idxs = []
+            for export_file_path, export_idx in zip(list(self.file_dict['files'][self.file_dict['checked'] == 1]), export_idxs):
+                export_image_path = pathlib.Path(export_file_path)
+                export_label_path = export_image_path.parent.parent / 'labels' / pathlib.Path(export_image_path.name).with_suffix('.txt')
 
-    def import_data(self):
-        fd = QFileDialog()
-        import_path = fd.getExistingDirectory(self, 'Select Directory')
-        if import_path:
-            # ToDo: copy the UN validated files and add them to csv
-            # only files that are not in the current folder
-            print(import_path)
+                target_image_path = pathlib.Path(export_path) / 'images' / export_image_path.name
+                target_label_path = pathlib.Path(export_path) / 'labels' / export_label_path.name
+                if not target_image_path.exists():
+                    os.rename(export_image_path, target_image_path)
+                    os.rename(export_label_path, target_label_path)
+                else:
+                    keep_idxs.append(export_idx)
+
+
+            # self.file_dict.loc[self.file_dict['name'] == self.highlighted_label.text()].index.values[0]
+            drop_idxs = list(set(export_idxs) - set(keep_idxs))
+            self.file_dict = self.file_dict.drop(drop_idxs)
+            self.save_file_dict()
+            self.close_without_saving_rois = True
+            self.close()
+
         else:
             print('nope')
             pass
 
     def open(self):
-        # ToDo: to be implemented
         pass
 
     def init_MenuBar(self):

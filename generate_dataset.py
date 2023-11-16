@@ -97,7 +97,7 @@ def save_spec_pic(folder, s_trans, times, freq, t_idx0, t_idx1, f_idx0, f_idx1, 
     return fig_title
 
 
-def bboxes_from_file(times_v, fish_freq, rise_idx, rise_size, fish_baseline_freq_time, fish_baseline_freq, pic_save_str,t0, t1, f0, f1):
+def bboxes_from_file(times_v, fish_freq, rise_idx, rise_size, fish_baseline_freq_time, fish_baseline_freq, pic_save_str,t0, t1, f0, f1, label_save_folder):
 
     times_v_idx0, times_v_idx1 = np.argmin(np.abs(times_v - t0)), np.argmin(np.abs(times_v - t1))
 
@@ -185,13 +185,16 @@ def bboxes_from_file(times_v, fish_freq, rise_idx, rise_size, fish_baseline_freq
         all_height
     ]).T
 
-    np.savetxt(LABEL_DIR/ Path(pic_save_str).with_suffix('.txt'), bbox_yolo_style)
+    np.savetxt(label_save_folder / Path(pic_save_str).with_suffix('.txt'), bbox_yolo_style)
     return bbox_yolo_style
 
 
 def main(args):
     folders = list(f.parent for f in Path(args.folder).rglob('fill_times.npy'))
-    pic_save_folder = DATA_DIR if not args.inference else (Path('data') / Path(args.folder).name)
+    pic_save_folder = Path('data') / Path(args.folder).name / 'images'
+    label_save_folder = Path('data') / Path(args.folder).name / 'labels'
+    # embed()
+    # quit()
 
     if len(folders) == 0:
         print('no datasets containing fill_times.npy found')
@@ -202,8 +205,10 @@ def main(args):
 
     else:
         print('generate inference dataset ... only image output')
-        if not (Path('data') / Path(args.folder).name).exists():
-            (Path('data') / Path(args.folder).name).mkdir(parents=True, exist_ok=True)
+        if not pic_save_folder.exists():
+            pic_save_folder.mkdir(parents=True, exist_ok=True)
+        if not label_save_folder.exists():
+            label_save_folder.mkdir(parents=True, exist_ok=True)
 
     for enu, folder in enumerate(folders):
         print(f'DataSet generation from {folder} | {enu+1}/{len(folders)}')
@@ -253,57 +258,14 @@ def main(args):
             if not args.inference:
                 bbox_yolo_style = bboxes_from_file(times_v, fish_freq, rise_idx, rise_size,
                                                    fish_baseline_freq_time, fish_baseline_freq,
-                                                   pic_save_str,t0, t1, f0, f1)
-
-            #######################################################################
-            # if False:
-            #     if bbox_yolo_style.shape[0] >= 1:
-            #         f_res, t_res = freq[1] - freq[0], times[1] - times[0]
-            #
-            #         fig_title = (
-            #             f'{Path(folder).name}__{times[t_idx0]:5.0f}s-{times[t_idx1]:5.0f}s__{freq[f_idx0]:4.0f}-{freq[f_idx1]:4.0f}Hz.png').replace(
-            #             ' ', '0')
-            #         fig = plt.figure(figsize=IMG_SIZE, num=fig_title)
-            #         gs = gridspec.GridSpec(1, 1, bottom=0.1, left=0.1, right=0.95, top=0.95)  #
-            #         ax = fig.add_subplot(gs[0, 0])
-            #         ax.imshow(s_trans.squeeze(), cmap='gray', aspect='auto', origin='lower',
-            #                   extent=(times[t_idx0] / 3600, (times[t_idx1] + t_res) / 3600, freq[f_idx0], freq[f_idx1] + f_res))
-            #         # ax.invert_yaxis()
-            #         # ax.axis(False)
-            #
-            #         for i in range(len(bbox_df)):
-            #             # Cbbox = np.array(bbox_df.loc[i, ['x0', 'y0', 'x1', 'y1']].values, dtype=np.float32)
-            #             Cbbox = bbox_df.loc[i, ['t0', 'f0', 't1', 'f1']]
-            #             ax.add_patch(
-            #                 Rectangle((float(Cbbox['t0']) / 3600, float(Cbbox['f0'])),
-            #                           float(Cbbox['t1']) / 3600 - float(Cbbox['t0']) / 3600,
-            #                           float(Cbbox['f1']) - float(Cbbox['f0']),
-            #                           fill=False, color="white", linestyle='-', linewidth=2, zorder=10)
-            #             )
-            #
-            #         # print(bbox_yolo_style.T)
-            #
-            #         for bbox in bbox_yolo_style:
-            #             x0 = bbox[1] - bbox[3]/2 # x_center - width/2
-            #             y0 = 1 - (bbox[2] + bbox[4]/2) # x_center - width/2
-            #             w = bbox[3]
-            #             h = bbox[4]
-            #             ax.add_patch(
-            #                 Rectangle((x0, y0), w, h,
-            #                           fill=False, color="k", linestyle='--', linewidth=2, zorder=10,
-            #                           transform=ax.transAxes)
-            #             )
-            #         plt.show()
-            #######################################################################
-
-        # if not args.inference:
-        #     print('save bboxes')
-            # bbox_df.to_csv(os.path.join(args.dataset_folder, 'bbox_dataset.csv'), columns=cols, sep=',')
+                                                   pic_save_str,t0, t1, f0, f1, label_save_folder)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Evaluated electrode array recordings with multiple fish.')
     parser.add_argument('folder', type=str, help='single recording analysis', default='')
     parser.add_argument('-i', "--inference", action="store_true")
     args = parser.parse_args()
+
+    # ToDo: put "images" in image folder
 
     main(args)

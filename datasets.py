@@ -26,6 +26,8 @@ class InferenceDataset(Dataset):
     def __init__(self, dir_path):
         self.dir_path = dir_path
         self.all_images = sorted(list(Path(self.dir_path).rglob(f'*.png')))
+        self.file_names = np.array([Path(x).with_suffix('') for x in self.all_images])
+        # self.images = np.array(sorted(os.listdir(DATA_DIR)))
     def __len__(self):
         return len(self.all_images)
 
@@ -39,45 +41,6 @@ class InferenceDataset(Dataset):
 
 
 class CustomDataset(Dataset):
-    def __init__(self, dir_path, bbox_df):
-        self.dir_path = dir_path
-        self.bbox_df = bbox_df
-
-        self.all_images = np.array(sorted(pd.unique(self.bbox_df['image'])), dtype=str)
-        self.image_paths = list(map(lambda x: Path(self.dir_path)/x, self.all_images))
-
-    def __getitem__(self, idx):
-        image_name = self.all_images[idx]
-        image_path = os.path.join(self.dir_path, image_name)
-
-        img = Image.open(image_path)
-        img_tensor = F.to_tensor(img.convert('RGB'))
-
-        Cbbox = self.bbox_df[self.bbox_df['image'] == image_name]
-
-        labels = np.ones(len(Cbbox), dtype=int)
-        boxes = torch.as_tensor(Cbbox.loc[:, ['x0', 'y0', 'x1', 'y1']].values, dtype=torch.float32)
-
-        area = (boxes[:, 3] - boxes[:, 1]) * (boxes[:, 2] - boxes[:, 0])
-        # no crowd instances
-        iscrowd = torch.zeros((boxes.shape[0],), dtype=torch.int64)
-
-        target = {}
-        target["boxes"] = boxes
-        target["labels"] = torch.as_tensor(labels, dtype=torch.int64)
-        target["area"] = area
-        target["iscrowd"] = iscrowd
-        image_id = torch.tensor([idx])
-        target["image_id"] = image_id
-        target["image_name"] = image_name #ToDo: implement this as 3rd return...
-
-        return img_tensor, target
-
-    def __len__(self):
-        return len(self.all_images)
-
-
-class CustomDataset_v2(Dataset):
     def __init__(self, limited_idxs=None):
         self.images = np.array(sorted(os.listdir(DATA_DIR)))
         self.labels = np.array(sorted(os.listdir(LABEL_DIR)))
@@ -98,7 +61,6 @@ class CustomDataset_v2(Dataset):
         annotations = np.loadtxt(Path(LABEL_DIR) / Path(self.images[idx]).with_suffix('.txt'), delimiter=' ')
 
         boxes, labels, area, iscrowd = self.extract_bboxes(annotations)
-
 
         target = {}
         target["boxes"] = boxes
@@ -147,26 +109,10 @@ def custom_train_test_split():
     train_idxs = np.sort(data_idxs[int(0.2 * len(data_idxs)):])
     test_idxs = np.sort(data_idxs[:int(0.2 * len(data_idxs))])
 
-    train_data = CustomDataset_v2(limited_idxs=train_idxs)
-    test_data = CustomDataset_v2(limited_idxs=test_idxs)
+    train_data = CustomDataset(limited_idxs=train_idxs)
+    test_data = CustomDataset(limited_idxs=test_idxs)
 
     return train_data, test_data
-
-def create_train_or_test_dataset(path, train=True):
-    if train == True:
-        pfx='train'
-        print('Generate train dataset !')
-    else:
-        print('Generate test dataset !')
-        pfx='test'
-
-    csv_candidates = list(Path(path).rglob(f'*{pfx}*.csv'))
-    if len(csv_candidates) == 0:
-        print(f'no .csv files for *{pfx}* found in {Path(path)}')
-        quit()
-    else:
-        bboxes = pd.read_csv(csv_candidates[0], sep=',', index_col=0)
-    return CustomDataset(path, bboxes)
 
 
 def create_train_loader(train_dataset, num_workers=0):
@@ -190,17 +136,6 @@ def create_valid_loader(valid_dataset, num_workers=0):
         collate_fn=collate_fn
     )
     return valid_loader
-
-def create_inference_loader(inference_dataset, num_workers=0):
-    inference_loader = DataLoader(
-        inference_dataset,
-        batch_size=BATCH_SIZE,
-        shuffle=False,
-        num_workers=num_workers,
-        collate_fn=collate_fn
-    )
-    return inference_loader
-
 
 if __name__ == '__main__':
     train_data, test_data = custom_train_test_split()
