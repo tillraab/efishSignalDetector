@@ -73,7 +73,7 @@ def infere_model(inference_loader, model, dataset_name, detection_th=0.8):
                 rel_width = rel_x1 - rel_x0
                 rel_height = rel_y1 - rel_y0
 
-                yolo_labels.append([1, rel_x_center, rel_y_center, rel_width, rel_height])
+                yolo_labels.append([1, rel_x_center, rel_y_center, rel_width, rel_height, score])
 
             label_path = Path('data') / dataset_name / 'labels' / Path(img_name).with_suffix('.txt')
             np.savetxt(label_path, yolo_labels)
