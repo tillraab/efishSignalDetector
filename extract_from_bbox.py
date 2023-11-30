@@ -50,46 +50,69 @@ def load_wavetracker_data(raw_path):
     return fund_v, ident_v, idx_v, times
 
 
-def assign_rises_to_ids(raw_path, time_frequency_bboxes, overlapping_boxes, bbox_groups):
+def assign_rises_to_ids(raw_path, time_frequency_bboxes, bbox_groups):
+    def identify_most_likely_rise_id(possible_ids, t0, t1, f0, f1, fund_v, ident_v, times, idx_v):
+
+        mean_id_box_f_rel_to_bbox = []
+        for id in possible_ids:
+            id_box_f = fund_v[(ident_v == id) & (times[idx_v] >= t0) & (times[idx_v] <= t1)]
+            id_box_f_rel_to_bbox = (id_box_f - f0) / (f1 - f0)
+            mean_id_box_f_rel_to_bbox.append(np.mean(id_box_f_rel_to_bbox))
+            # print(id, np.mean(id_box_f), f0, f1, np.mean(id_box_f_rel_to_bbox))
+
+        most_likely_id = possible_ids[np.argsort(mean_id_box_f_rel_to_bbox)[0]]
+        return most_likely_id
+
     fund_v, ident_v, idx_v, times = load_wavetracker_data(raw_path)
+
+    # rise_id = np.full(len(time_frequency_bboxes), np.nan)
+    # embed()
+    # quit()
 
     fig, ax = plt.subplots()
     ax.plot(times[idx_v[~np.isnan(ident_v)]], fund_v[~np.isnan(ident_v)], '.')
 
     mask = time_frequency_bboxes['file_name'] == raw_path.parent.name
     for index, bbox in time_frequency_bboxes[mask].iterrows():
-        name, t0, f0, t1, f1 = (bbox[0], *bbox[1:-1].astype(float))
+        name, t0, f0, t1, f1, score = (bbox[0], *bbox[1:-1].astype(float))
         if bbox_groups[index] == 0:
             color = 'tab:green'
+        elif bbox_groups[index] > 0:
+            color = 'tab:red'
         else:
             color = 'k'
-        # if overlapping_boxes[index] == 0:
-        #     color='tab:green'
-        # elif overlapping_boxes[index] == 1:
-        #     color = 'tab:olive'
-        # elif overlapping_boxes[index] == 2:
-        #     color = 'tab:orange'
-        # elif overlapping_boxes[index] == 3:
-        #     color = 'tab:red'
-        # color = 'tab:green' if overlapping_boxes[index] == 0 else 'tab:orange'
+
         ax.add_patch(
             Rectangle((t0, f0),
                       (t1 - t0),
                       (f1 - f0),
                       fill=False, color=color, linestyle='--', linewidth=2, zorder=10)
+
         )
-    plt.show()
-    # if np.any(overlapping_boxes[mask] >= 2):
-    #     print('yay')
-    #     embed()
-    #     quit()
-    # ToDo: eliminate double rises -- overlap
-    # ToDo: double detections -- non overlap --> the one with higher probability ?!
-    # ToDo: assign rises to traces --> who is at lower right corner
+        ax.text(t1, f1, f'{score:.1%}', ha='right', va='bottom')
+
+        possible_ids = np.unique(
+            ident_v[~np.isnan(ident_v) &
+                    (t0 <= times[idx_v]) &
+                    (t1 >= times[idx_v]) &
+                    (f0 <= fund_v) &
+                    (f1 >= fund_v)]
+        )
+        if len(possible_ids) == 1:
+            time_frequency_bboxes.at[index, 'id'] = possible_ids[0]
+            # rise_id[index] = possible_ids[0]
+        elif len(possible_ids) > 1:
+            time_frequency_bboxes.at[index, 'id']= identify_most_likely_rise_id(possible_ids, t0, t1, f0, f1, fund_v, ident_v, times, idx_v)
+            # rise_id[index] = identify_most_likely_rise_id(possible_ids, t0, t1, f0, f1, fund_v, ident_v, times, idx_v)
+
+    # time_frequency_bboxes['id'] = rise_id
+    # embed()
+    plt.close()
+    return time_frequency_bboxes
+
 
 def find_overlapping_bboxes(df_collect):
     file_names = np.array(df_collect)[:, 0]
-    bboxes_overlapping_mask = np.zeros(len(df_collect))
     bboxes = np.array(df_collect)[:, 1:].astype(float)
 
     overlap_bbox_idxs = []
@@ -119,12 +142,9 @@ def find_overlapping_bboxes(df_collect):
             if freq_helper[0] == freq_helper[1]:
                 continue
 
-            bboxes_overlapping_mask[ind0] +=1
-            bboxes_overlapping_mask[ind1] +=1
-
             overlap_bbox_idxs.append((ind0, ind1))
 
-    return bboxes_overlapping_mask, np.asarray(overlap_bbox_idxs)
+    return np.asarray(overlap_bbox_idxs)
 
 
 def main(args):
@@ -143,40 +163,39 @@ def main(args):
 
     df_collect = np.array(df_collect)
 
-    bbox_overlapping_mask, overlap_bbox_idxs = find_overlapping_bboxes(df_collect)
+    overlap_bbox_idxs = find_overlapping_bboxes(df_collect)
 
-    bbox_groups = delete_double_boxes(bbox_overlapping_mask, overlap_bbox_idxs, df_collect)
-    print('got here')
+    bbox_groups = delete_double_boxes(overlap_bbox_idxs, df_collect)
 
     time_frequency_bboxes = pd.DataFrame(data= np.array(df_collect), columns=['file_name', 't0', 'f0', 't1', 'f1', 'score'])
+    time_frequency_bboxes['id'] = np.full(len(time_frequency_bboxes), np.nan)
 
     ###########################################
-    colors = np.random.rand(np.max(bbox_groups).astype(int), 3)
-    for file_name in time_frequency_bboxes['file_name'].unique():
-        fig, ax = plt.subplots()
-
-        mask = time_frequency_bboxes['file_name'] == file_name
-        for index, bbox in time_frequency_bboxes[mask].iterrows():
-            name, t0, f0, t1, f1 = (bbox[0], *bbox[1:-1].astype(float))
-            if bbox_groups[index] == 0:
-                color = 'tab:green'
-            elif bbox_groups[index] > 0:
-                color = 'tab:red'
-            else:
-                color = 'k'
-
-            ax.add_patch(
-                Rectangle((t0, f0),
-                          (t1 - t0),
-                          (f1 - f0),
-                          fill=False, color=color, linestyle='--', linewidth=2, zorder=10)
-            )
-        # ax.set_xlim(float(time_frequency_bboxes[mask]['t0'].min()), float(time_frequency_bboxes[mask]['t1'].max()))
-        ax.set_xlim(0, float(time_frequency_bboxes[mask]['t1'].max()))
-        # ax.set_ylim(float(time_frequency_bboxes[mask]['f0'].min()), float(time_frequency_bboxes[mask]['f1'].max()))
-        ax.set_ylim(400, 1200)
-        plt.show()
-    exit()
+    # for file_name in time_frequency_bboxes['file_name'].unique():
+    #     fig, ax = plt.subplots()
+    #
+    #     mask = time_frequency_bboxes['file_name'] == file_name
+    #     for index, bbox in time_frequency_bboxes[mask].iterrows():
+    #         name, t0, f0, t1, f1 = (bbox[0], *bbox[1:-1].astype(float))
+    #         if bbox_groups[index] == 0:
+    #             color = 'tab:green'
+    #         elif bbox_groups[index] > 0:
+    #             color = 'tab:red'
+    #         else:
+    #             color = 'k'
+    #
+    #         ax.add_patch(
+    #             Rectangle((t0, f0),
+    #                       (t1 - t0),
+    #                       (f1 - f0),
+    #                       fill=False, color=color, linestyle='--', linewidth=2, zorder=10)
+    #         )
+    #     # ax.set_xlim(float(time_frequency_bboxes[mask]['t0'].min()), float(time_frequency_bboxes[mask]['t1'].max()))
+    #     ax.set_xlim(0, float(time_frequency_bboxes[mask]['t1'].max()))
+    #     # ax.set_ylim(float(time_frequency_bboxes[mask]['f0'].min()), float(time_frequency_bboxes[mask]['f1'].max()))
+    #     ax.set_ylim(400, 1200)
+    #     plt.show()
+    # exit()
     ###########################################
 
     if args.tracking_data_path:
@@ -184,11 +203,16 @@ def main(args):
         for raw_path in file_paths:
             if not raw_path.parent.name in time_frequency_bboxes['file_name'].to_list():
                 continue
-            assign_rises_to_ids(raw_path, time_frequency_bboxes, bbox_overlapping_mask, bbox_groups)
+            time_frequency_bboxes = assign_rises_to_ids(raw_path, time_frequency_bboxes, bbox_groups)
+        for raw_path in file_paths:
+            # mask = (time_frequency_bboxes['file_name'] == raw_path.parent.name)
+            mask = ((time_frequency_bboxes['file_name'] == raw_path.parent.name) & (~np.isnan(time_frequency_bboxes['id'])))
+            save_df = pd.DataFrame(time_frequency_bboxes[mask][['t0', 't1', 'f0', 'f1', 'score', 'id']].values, columns=['t0', 't1', 'f0', 'f1', 'score', 'id'])
+            save_df['label'] = np.ones(len(save_df), dtype=int)
+            save_df.to_csv(raw_path.parent / 'risedetector_bboxes.csv', sep = ',', index = False)
+    quit()
 
-    pass
-
-def delete_double_boxes(bbox_overlapping_mask, overlap_bbox_idxs, df_collect, overlap_th = 0.2):
+def delete_double_boxes(overlap_bbox_idxs, df_collect, overlap_th = 0.2):
     def get_connected(non_regarded_bbox_idx, overlap_bbox_idxs):
         mask = np.array((np.array(overlap_bbox_idxs) == non_regarded_bbox_idx).sum(1), dtype=bool)
         affected_bbox_idxs = np.unique(overlap_bbox_idxs[mask])
@@ -196,7 +220,7 @@ def delete_double_boxes(bbox_overlapping_mask, overlap_bbox_idxs, df_collect, ov
 
     handled_bbox_idxs = []
     bbox_groups = np.zeros(len(df_collect))
-    detele_bbox_idxs = []
+    # detele_bbox_idxs = []
 
     for Coverlapping_bbox_idx in tqdm(np.unique(overlap_bbox_idxs)):
         if Coverlapping_bbox_idx in handled_bbox_idxs:
@@ -219,8 +243,6 @@ def delete_double_boxes(bbox_overlapping_mask, overlap_bbox_idxs, df_collect, ov
 
         bbox_idx_group = np.array(regarded_bbox_idxs)
         bbox_scores = df_collect[bbox_idx_group][:, -1].astype(float)
-        # bbox_idx_group = bbox_idx_group[bbox_scores.argsort()]
-        # bbox_scores = bbox_scores[bbox_scores.argsort()]
 
         bbox_groups[bbox_idx_group] = np.max(bbox_groups) + 1
 
@@ -231,19 +253,10 @@ def delete_double_boxes(bbox_overlapping_mask, overlap_bbox_idxs, df_collect, ov
             remove_idx_combinations_scores.extend(list(itertools.combinations(bbox_scores, r=r)))
         for enu, combi_score in enumerate(remove_idx_combinations_scores):
             remove_idx_combinations_scores[enu] = np.sum(combi_score)
-        if len(bbox_idx_group) > 2:
-            print(remove_idx_combinations)
-            print(remove_idx_combinations_scores)
-            print('')
-
+        if len(bbox_idx_group) > 1:
             remove_idx_combinations = [remove_idx_combinations[ind] for ind in np.argsort(remove_idx_combinations_scores)]
             remove_idx_combinations_scores = [remove_idx_combinations_scores[ind] for ind in np.argsort(remove_idx_combinations_scores)]
 
-            print(remove_idx_combinations)
-            print(remove_idx_combinations_scores)
-            print('')
-
-        # time_overlap_pct, freq_overlap_pct = compute_time_frequency_overlap_for_bbox_group(bbox_idx_group, df_collect)
 
         for remove_idx in remove_idx_combinations:
             select_bbox_idx_group = list(set(bbox_idx_group) - set(remove_idx))
@@ -252,8 +265,7 @@ def delete_double_boxes(bbox_overlapping_mask, overlap_bbox_idxs, df_collect, ov
 
             if np.all(np.min([time_overlap_pct, freq_overlap_pct], axis=0) < overlap_th):
                 break
-        #embed()
-        #quit()
+
         if len(remove_idx) > 0:
             bbox_groups[np.array(remove_idx)] *= -1
 
