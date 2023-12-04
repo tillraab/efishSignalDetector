@@ -24,7 +24,7 @@ def plot_inference(img_tensor, img_name, output, detection_threshold, dataset_na
     gs = gridspec.GridSpec(1, 1, bottom=0, left=0, right=1, top=1)  #
     ax = fig.add_subplot(gs[0, 0])
 
-    ax.imshow(img_tensor.cpu().squeeze().permute(1, 2, 0),  aspect='auto')
+    ax.imshow(img_tensor.cpu().squeeze().permute(1, 2, 0), aspect='auto', cmap='afmhot')
     for (x0, y0, x1, y1), l, score in zip(output['boxes'].cpu(), output['labels'].cpu(), output['scores'].cpu()):
         if score < detection_threshold:
             continue
@@ -34,7 +34,7 @@ def plot_inference(img_tensor, img_name, output, detection_threshold, dataset_na
             Rectangle((x0, y0),
                       (x1 - x0),
                       (y1 - y0),
-                      fill=False, color="tab:green", linestyle='--', linewidth=2, zorder=10)
+                      fill=False, color="tab:gray", linestyle='-', linewidth=2, zorder=10)
         )
 
     ax.set_axis_off()
@@ -97,6 +97,11 @@ def main(args):
         Path(Path(INFERENCE_OUTDIR)/dataset_name).mkdir(parents=True, exist_ok=True)
 
     infere_model(inference_loader, model, dataset_name)
+
+    if (Path('data').absolute() / dataset_name / 'file_dict.csv').exists():
+        (Path('data').absolute() / dataset_name / 'file_dict.csv').unlink()
+
+
 
     # detection_threshold = 0.8
     # frame_count = 0
