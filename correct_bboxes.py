@@ -3,6 +3,7 @@ import sys
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 import pyqtgraph as pg
+import shutil
 
 from PIL import Image, ImageOps
 import numpy as np
@@ -242,15 +243,18 @@ class Bbox_correct_UI(QMainWindow):
                 target_image_path = pathlib.Path(export_path) / 'images' / export_image_path.name
                 target_label_path = pathlib.Path(export_path) / 'labels' / export_label_path.name
                 if not target_image_path.exists():
-                    os.rename(export_image_path, target_image_path)
-                    os.rename(export_label_path, target_label_path)
+                    # ToDo: this is not tested but should work
+                    # os.rename(export_image_path, target_image_path)
+                    shutil.copy(export_image_path, target_image_path)
+                    # os.rename(export_label_path, target_label_path)
+                    shutil.copy(export_label_path, target_label_path)
                 else:
                     keep_idxs.append(export_idx)
 
 
             # self.file_dict.loc[self.file_dict['name'] == self.highlighted_label.text()].index.values[0]
             drop_idxs = list(set(export_idxs) - set(keep_idxs))
-            self.file_dict = self.file_dict.drop(drop_idxs)
+            # self.file_dict = self.file_dict.drop(drop_idxs)
             self.save_file_dict()
             self.close_without_saving_rois = True
             self.close()
