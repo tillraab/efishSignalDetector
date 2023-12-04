@@ -65,16 +65,12 @@ def assign_rises_to_ids(raw_path, time_frequency_bboxes, bbox_groups):
 
     fund_v, ident_v, idx_v, times = load_wavetracker_data(raw_path)
 
-    # rise_id = np.full(len(time_frequency_bboxes), np.nan)
-    # embed()
-    # quit()
-
     fig, ax = plt.subplots()
     ax.plot(times[idx_v[~np.isnan(ident_v)]], fund_v[~np.isnan(ident_v)], '.')
 
     mask = time_frequency_bboxes['file_name'] == raw_path.parent.name
     for index, bbox in time_frequency_bboxes[mask].iterrows():
-        name, t0, f0, t1, f1, score = (bbox[0], *bbox[1:-1].astype(float))
+        name, t0, f0, t1, f1, score = (bbox[0], *bbox[1:-2].astype(float))
         if bbox_groups[index] == 0:
             color = 'tab:green'
         elif bbox_groups[index] > 0:
@@ -99,14 +95,37 @@ def assign_rises_to_ids(raw_path, time_frequency_bboxes, bbox_groups):
                     (f1 >= fund_v)]
         )
         if len(possible_ids) == 1:
-            time_frequency_bboxes.at[index, 'id'] = possible_ids[0]
-            # rise_id[index] = possible_ids[0]
+            assigned_id = possible_ids[0]
+            time_frequency_bboxes.at[index, 'id'] = assigned_id
         elif len(possible_ids) > 1:
-            time_frequency_bboxes.at[index, 'id']= identify_most_likely_rise_id(possible_ids, t0, t1, f0, f1, fund_v, ident_v, times, idx_v)
+            assigned_id = identify_most_likely_rise_id(possible_ids, t0, t1, f0, f1, fund_v, ident_v, times, idx_v)
+            time_frequency_bboxes.at[index, 'id'] = assigned_id
             # rise_id[index] = identify_most_likely_rise_id(possible_ids, t0, t1, f0, f1, fund_v, ident_v, times, idx_v)
+        else:
+            continue
 
+        rise_start_freq_th = f0 + (f1 - f0) * 0.37
+        wavetracker_mask = np.arange(len(fund_v))[
+            (times[idx_v] >= t0) &
+            (times[idx_v] <= t1) &
+            (ident_v == assigned_id)
+        ]
+        if np.sum(fund_v[wavetracker_mask] > rise_start_freq_th) > 0:
+            # rise start time = moment where rise freq exceeds 37% of bbox freq range ...
+            rise_start_idx = wavetracker_mask[fund_v[wavetracker_mask] > rise_start_freq_th][0]
+            rise_time = times[idx_v[rise_start_idx]]
+        else:
+            ### if this is never the case use the largest slope
+            rise_start_idx = wavetracker_mask[np.argmax(np.diff(fund_v[wavetracker_mask]))]
+            rise_time = times[idx_v[rise_start_idx]]
+        time_frequency_bboxes.at[index, 'event_time'] = rise_time
+
+        ax.plot(rise_time, fund_v[rise_start_idx], 'ok')
+        # embed()
+        # quit()
     # time_frequency_bboxes['id'] = rise_id
     # embed()
+    # plt.show()
     plt.close()
     return time_frequency_bboxes
 
@@ -169,6 +188,7 @@ def main(args):
 
     time_frequency_bboxes = pd.DataFrame(data= np.array(df_collect), columns=['file_name', 't0', 'f0', 't1', 'f1', 'score'])
     time_frequency_bboxes['id'] = np.full(len(time_frequency_bboxes), np.nan)
+    time_frequency_bboxes['event_time'] = np.full(len(time_frequency_bboxes), np.nan)
 
     ###########################################
     # for file_name in time_frequency_bboxes['file_name'].unique():
@@ -207,7 +227,7 @@ def main(args):
         for raw_path in file_paths:
             # mask = (time_frequency_bboxes['file_name'] == raw_path.parent.name)
             mask = ((time_frequency_bboxes['file_name'] == raw_path.parent.name) & (~np.isnan(time_frequency_bboxes['id'])))
-            save_df = pd.DataFrame(time_frequency_bboxes[mask][['t0', 't1', 'f0', 'f1', 'score', 'id']].values, columns=['t0', 't1', 'f0', 'f1', 'score', 'id'])
+            save_df = pd.DataFrame(time_frequency_bboxes[mask][['t0', 't1', 'f0', 'f1', 'score', 'id', 'event_time']].values, columns=['t0', 't1', 'f0', 'f1', 'score', 'id', 'event_time'])
             save_df['label'] = np.ones(len(save_df), dtype=int)
             save_df.to_csv(raw_path.parent / 'risedetector_bboxes.csv', sep = ',', index = False)
     quit()
